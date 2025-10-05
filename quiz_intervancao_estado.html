@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Intervenção do Estado na Economia (11 Questões)</title>
+    <style>
+        /* Paleta de Cores VIBRANTE */
+        :root {
+            --cor-fundo-principal: #e3f2fd; /* Azul Claro */
+            --cor-container: #ffffff;
+            --cor-primaria: #007bff; /* Azul Forte */
+            --cor-secundaria: #ff3366; /* Rosa Shocking (Headers) */
+            --cor-acerto: #4CAF50; /* Verde Acerto */
+            --cor-erro: #F44336; /* Vermelho Erro */
+            --cor-botao: #9c27b0; /* Roxo principal */
+            --cor-destaque-selecao: #ffc107; /* Amarelo Forte */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--cor-fundo-principal);
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            width: 85%;
+            max-width: 950px;
+            margin: 40px auto;
+            background-color: var(--cor-container);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: var(--cor-secundaria);
+            border-bottom: 3px solid var(--cor-destaque-selecao);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+        h2 {
+            color: var(--cor-primaria);
+            margin-top: 15px;
+        }
+        #jogo, #resultado-final {
+            display: none; 
+        }
+        #capa {
+            display: block; 
+        }
+        
+        /* Botão INICIAR */
+        .capa-botao {
+            padding: 15px 35px;
+            font-size: 1.2em;
+            background-color: var(--cor-secundaria);
+            color: white;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        .capa-botao:hover {
+            background-color: #d62050;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            transition: opacity 0.3s, transform 0.1s;
+            font-weight: bold;
+            margin: 5px;
+            background-color: var(--cor-botao);
+            color: white;
+        }
+        
+        .decisao-opcoes {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .decisao-opcoes button {
+            flex-grow: 1;
+            min-width: 250px;
+            text-align: left;
+            padding: 15px;
+        }
+        .decisao-opcoes button:hover:not(:disabled) {
+            opacity: 0.85;
+        }
+
+        /* Feedback e Cronómetro */
+        .feedback {
+            margin: 15px 0;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            color: white;
+            opacity: 0.95;
+            font-size: 1.1em;
+        }
+        #cronometro {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--cor-secundaria);
+        }
+        .selected-choice {
+            border: 4px solid var(--cor-destaque-selecao) !important;
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Botão Próxima Decisão */
+        #botao-proxima {
+            background-color: var(--cor-primaria);
+            color: white;
+            margin-top: 30px;
+            font-size: 1.1em;
+        }
+        #botao-proxima:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="capa">
+            <h1>Quiz: Intervenção do Estado na Economia</h1>
+            <p><strong>Curso de Economia/Gestão, 11.º Ano</strong> | Foco: Eficiência, Equidade e Estabilidade.</p>
+            <hr>
+            <h2>11 Questões. 110 Pontos.</h2>
+
+            <div class="capa-scenario">
+                <p>O teu objetivo é identificar o objetivo da intervenção do Estado ou o conceito económico em causa. O vencedor é quem obtiver a **maior pontuação no menor tempo**.</p>
+            </div>
+            <button class="capa-botao" onclick="iniciarJogo()">Iniciar Jogo</button>
+        </div>
+
+        <div id="jogo">
+            <h2>Questão <span id="num-decisao">1</span> de 11</h2>
+            <div id="cronometro">Tempo de Jogo: 00:00</div>
+            <hr>
+
+            <div id="pergunta-container">
+                <p><strong>Pergunta:</strong> <span id="contexto-decisao">Pergunta sobre intervenção estatal...</span></p>
+                
+                <h3>Qual a Opção Correta? (10 pontos)</h3>
+                <div id="opcoes-decisao" class="decisao-opcoes">
+                    </div>
+            </div>
+
+            <div class="feedback" id="feedback-acao"></div>
+            
+            <button id="botao-proxima" onclick="proximaDecisao()" style="display:none;">Próxima Questão (➜)</button>
+        </div>
+
+        <div id="resultado-final">
+            <h2>FIM DO QUIZ!</h2>
+            <p>As 11 questões foram concluídas.</p>
+            <h3>Resultados:</h3>
+            <p>Pontuação Total: <span id="pontuacao-final" style="font-size: 1.8em; color: var(--cor-acerto);">0</span> pontos (máximo 110).</p>
+            <p>Tempo Total: <span id="tempo-final" style="font-size: 1.8em; color: var(--cor-secundaria);">00:00</span>.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- Variáveis Globais ---
+        let pontuacao = 0;
+        let decisaoAtual = 0;
+        let tempoInicial;
+        let cronometroInterval;
+        let estadoDecisao = { acao: null }; 
+
+        // --- Estrutura das 11 Decisões de Economia (Corrigida) ---
+        const decisoes = [
+            // 1. Estabilidade
+            {
+                contexto: "O objetivo de manter o desemprego baixo e a inflação controlada (ciclo económico) faz parte da intervenção para garantir a:",
+                opcoes1: [
+                    { texto: "Equidade.", correto: false, valor: 'EQ' },
+                    { texto: "Eficiência.", correto: false, valor: 'EF' },
+                    { texto: "Estabilidade Macroeconómica.", correto: true, valor: 'EST' }
+                ]
+            },
+            // 2. Falha de Mercado
+            {
+                contexto: "O que acontece quando os mercados por si só não conseguem alocar recursos de forma ótima?",
+                opcoes1: [
+                    { texto: "Crise Financeira.", correto: false, valor: 'CF' },
+                    { texto: "Falha de Mercado (Market Failure).", correto: true, valor: 'FM' },
+                    { texto: "Externalidade Positiva.", correto: false, valor: 'EP' }
+                ]
+            },
+            // 3. Equidade
+            {
+                contexto: "A utilização de impostos progressivos (quem ganha mais, paga maior % de imposto) visa promover a:",
+                opcoes1: [
+                    { texto: "Estabilidade fiscal.", correto: false, valor: 'EST_F' },
+                    { texto: "Equidade e Redistribuição.", correto: true, valor: 'EQU' },
+                    { texto: "Neutralidade.", correto: false, valor: 'NEU' }
+                ]
+            },
+            // 4. Externalidade Negativa
+            {
+                contexto: "O fumo de uma fábrica que polui o ar da vizinhança é um exemplo de:",
+                opcoes1: [
+                    { texto: "Bem Público.", correto: false, valor: 'BP' },
+                    { texto: "Externalidade Negativa.", correto: true, valor: 'EN' },
+                    { texto: "Externalidade Positiva.", correto: false, valor: 'EP' }
+                ]
+            },
+            // 5. Eficiência (Corrigir EN)
+            {
+                contexto: "A intervenção do Estado através de impostos sobre a poluição (Imposto de Pigou) visa corrigir uma falha de mercado relacionada com a:",
+                opcoes1: [
+                    { texto: "Equidade.", correto: false, valor: 'EQ_P' },
+                    { texto: "Eficiência (internalização de custos).", correto: true, valor: 'EF_P' },
+                    { texto: "Estabilidade.", correto: false, valor: 'EST_P' }
+                ]
+            },
+            // 6. Bem Público
+            {
+                contexto: "Um farol que guia os navios ou a defesa nacional são exemplos clássicos de bens que são Não-Exclusivos e Não-Rivais, conhecidos como:",
+                opcoes1: [
+                    { texto: "Bens Privados.", correto: false, valor: 'BPR' },
+                    { texto: "Externalidades Negativas.", correto: false, valor: 'EN' },
+                    { texto: "Bens Públicos.", correto: true, valor: 'BP' }
+                ]
+            },
+            // 7. Equidade (Redistribuição)
+            {
+                contexto: "A atribuição de um Rendimento Social de Inserção (RSI) a famílias carenciadas visa principalmente o objetivo de:",
+                opcoes1: [
+                    { texto: "Eficiência produtiva.", correto: false, valor: 'EF_R' },
+                    { texto: "Equidade Social e Coesão.", correto: true, valor: 'ES' },
+                    { texto: "Estabilidade cambial.", correto: false, valor: 'EST_C' }
+                ]
+            },
+            // 8. Estabilidade (Inflação)
+            {
+                contexto: "A subida generalizada e persistente dos preços na economia (desvalorização da moeda) é chamada de:",
+                opcoes1: [
+                    { texto: "Deflação.", correto: false, valor: 'DEF' },
+                    { texto: "Recessão.", correto: false, valor: 'REC' },
+                    { texto: "Inflação.", correto: true, valor: 'INF' }
+                ]
+            },
+            // 9. Externalidade Positiva
+            {
+                contexto: "A vacinação obrigatória, que protege não só o indivíduo, mas toda a comunidade, é um exemplo de:",
+                opcoes1: [
+                    { texto: "Falha de Mercado.", correto: false, valor: 'FM_V' },
+                    { texto: "Bem Privado.", correto: false, valor: 'BP_V' },
+                    { texto: "Externalidade Positiva.", correto: true, valor: 'EP_V' }
+                ]
+            },
+            // 10. Equidade (Instrumento)
+            {
+                contexto: "Que instrumento o Estado usa para financiar políticas de redistribuição de riqueza (Saúde, Educação, Segurança Social)?",
+                opcoes1: [
+                    { texto: "Venda de ativos públicos.", correto: false, valor: 'VAP' },
+                    { texto: "Emissão de moeda.", correto: false, valor: 'EM' },
+                    { texto: "Impostos e Contribuições.", correto: true, valor: 'IC' }
+                ]
+            },
+            // 11. Estabilidade (Medida)
+            {
+                contexto: "O aumento automático dos subsídios de desemprego durante uma recessão económica visa principalmente promover a:",
+                opcoes1: [
+                    { texto: "Maximização de lucros.", correto: false, valor: 'ML' },
+                    { texto: "Privatização de serviços.", correto: false, valor: 'PSV' },
+                    { texto: "Estabilidade (Função de Amortecedor/Automático).", correto: true, valor: 'EST_A' }
+                ]
+            },
+        ];
+
+        // --- Funções de Controlo do Jogo ---
+        // A função carregarDecisao e as restantes usam o tamanho do array 'decisoes.length' e funcionam corretamente.
+        const maxPerguntas = decisoes.length; // Usa o tamanho real do array (11)
+
+        function iniciarJogo() {
+            document.getElementById('capa').style.display = 'none';
+            document.getElementById('jogo').style.display = 'block'; 
+            
+            // Atualiza a contagem de questões no ecrã de jogo
+            document.querySelector('#jogo h2').textContent = `Questão 1 de ${maxPerguntas}`;
+
+            tempoInicial = Date.now();
+            iniciarCronometro();
+            carregarDecisao();
+        }
+
+        function iniciarCronometro() {
+            cronometroInterval = setInterval(() => {
+                const tempoDecorrido = Date.now() - tempoInicial;
+                const totalSegundos = Math.floor(tempoDecorrido / 1000);
+                const minutos = String(Math.floor(totalSegundos / 60)).padStart(2, '0');
+                const segundos = String(totalSegundos % 60).padStart(2, '0');
+                document.getElementById('cronometro').textContent = `Tempo de Jogo: ${minutos}:${segundos}`;
+            }, 1000);
+        }
+
+        function pararCronometro() {
+            clearInterval(cronometroInterval);
+            const tempoDecorrido = Date.now() - tempoInicial;
+            return Math.floor(tempoDecorrido / 1000); 
+        }
+
+        function carregarDecisao() {
+            if (decisaoAtual < decisoes.length) {
+                const decisao = decisoes[decisaoAtual];
+                estadoDecisao = { acao: null }; 
+                
+                // Atualiza a numeração
+                document.getElementById('num-decisao').textContent = decisaoAtual + 1;
+                document.querySelector('#jogo h2').textContent = `Questão ${decisaoAtual + 1} de ${maxPerguntas}`;
+
+                document.getElementById('contexto-decisao').textContent = decisao.contexto;
+                document.getElementById('feedback-acao').textContent = "";
+                document.getElementById('botao-proxima').style.display = 'none';
+
+                const opcoesDecisaoDiv = document.getElementById('opcoes-decisao');
+                opcoesDecisaoDiv.innerHTML = ""; 
+                decisao.opcoes1.forEach(opcao => {
+                    const btn = document.createElement('button');
+                    btn.textContent = opcao.texto;
