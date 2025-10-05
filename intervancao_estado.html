@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interativo: O Papel do Estado</title>
+    <style>
+        /* --- CSS: PARA UM JOGO COLORIDO E INTERATIVO --- */
+        :root {
+            --cor-primaria: #4A90E2; /* Azul Vibrante */
+            --cor-secundaria: #50E3C2; /* Verde Água */
+            --cor-fundo: #F0F8FF; /* Branco Suave/Céu */
+            --cor-sucesso: #7ED321; /* Verde Sucesso */
+            --cor-erro: #D0021B; /* Vermelho Erro */
+            --cor-texto: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative; 
+            /* Removi a transição desnecessária aqui: transition: all 0.5s ease-in-out; */
+        }
+
+        h1 {
+            color: var(--cor-primaria);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        /* --- Ecrã Inicial e Resultados --- */
+        #start-screen, #results-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* --- Barra de Progresso e Tempo --- */
+        #progress-bar {
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        #progress {
+            width: 0%;
+            height: 100%;
+            background-color: var(--cor-secundaria);
+            transition: width 0.4s ease-in-out;
+        }
+        #timer {
+            font-size: 1.5em;
+            color: var(--cor-erro);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* --- Botões de Ação Principal --- */
+        button {
+            padding: 12px 25px;
+            background-color: var(--cor-primaria);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #3b73b6;
+            transform: translateY(-2px);
+        }
+
+        /* --- Estilo das Opções de Resposta --- */
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .option-button {
+            background-color: #f7f7f7;
+            color: var(--cor-texto);
+            border: 2px solid var(--cor-primaria);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .option-button:hover:not(:disabled) {
+            background-color: var(--cor-secundaria);
+            border-color: #3b73b6;
+        }
+
+        .option-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* --- Feedback Visual --- */
+        .correct {
+            background-color: var(--cor-sucesso) !important;
+            color: white !important;
+            border-color: var(--cor-sucesso) !important;
+            animation: pulse-correct 0.5s;
+        }
+
+        .incorrect {
+            background-color: var(--cor-erro) !important;
+            color: white !important;
+            border-color: var(--cor-erro) !important;
+            animation: shake 0.5s;
+        }
+        
+        /* --- Animações --- */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        @keyframes pulse-correct {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- Ranking Table --- */
+        #leaderboard {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 1.1em;
+        }
+        #leaderboard th, #leaderboard td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        #leaderboard th {
+            background-color: var(--cor-primaria);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        
+        <div id="start-screen">
+            <h1>O Papel do Estado na Economia</h1>
+            <h2>Eficiência, Equidade, Estabilidade e Falhas de Mercado</h2>
+            <p><strong>Regras:</strong> 9 perguntas de escolha múltipla. Ganha quem acertar a **mais** no **menor tempo**! Os seus resultados serão guardados no Ranking.</p>
+            <button onclick="startQuiz()">Iniciar Jogo!</button>
+        </div>
+
+        <div id="quiz-screen" style="display: none;">
+            <div id="timer">Tempo: 00:00</div>
+            <div id="progress-bar"><div id="progress"></div></div>
+            
+            <h2 id="question-number"></h2>
+            <p id="question-text" style="font-size: 1.3em; margin-top: 15px; color: var(--cor-primaria); font-weight: 500;"></p>
+            
+            <div id="options-container" class="options">
+            </div>
+        </div>
+
+        <div id="results-screen" style="display: none;">
+            <h1>FIM DO JOGO!</h1>
+            <p style="font-size: 1.5em;">A sua Pontuação: <strong id="final-score" style="color: var(--cor-sucesso);"></strong> / 9</p>
+            <p style="font-size: 1.5em;">Tempo Total: <strong id="final-time" style="color: var(--cor-erro);"></strong></p>
+
+            <hr style="margin: 20px 0;">
+            
+            <h3>Ranking dos Melhores Jogadores</h3>
+            <table id="leaderboard">
+                <thead>
+                    <tr><th>Posição</th><th>Acertos</th><th>Tempo</th></tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            
+            <button onclick="window.location.reload()">Jogar Novamente</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- JAVASCRIPT: PARA A INTERATIVIDADE, LÓGICA E RANKING ---
+
+        const quizData = [
+            // O quizData é o mesmo que forneceu, com 9 perguntas
+            { question: "1. Qual dos objetivos da intervenção do Estado se relaciona com a forma como os recursos da sociedade são distribuídos pelos seus membros (justiça social)?", options: ["Estabilidade", "Eficiência", "Equidade", "Internalidade"], answer: "Equidade" },
+            { question: "2. A política de controlo da inflação e a redução das taxas de desemprego são exemplos de intervenção estatal com o objetivo primário de...?", options: ["Estabilidade", "Equidade", "Eficiência", "Provisão de Bens Privados"], answer: "Estabilidade" },
+            { question: "3. Quando uma fábrica polui um rio e impõe custos de saúde à comunidade vizinha sem compensação, estamos perante uma...", options: ["Falha de Estabilidade", "Externalidade Positiva", "Externalidade Negativa", "Bem Público"], answer: "Externalidade Negativa" },
+            { question: "4. A característica de 'Não-exclusão' num Bem Público significa que...", options: ["O consumo por uma pessoa não afeta o consumo por outra.", "O custo de produção do bem é nulo.", "Não é possível impedir que alguém consuma o bem, mesmo que não pague.", "O bem é fornecido exclusivamente pelo setor público."], answer: "Não é possível impedir que alguém consuma o bem, mesmo que não pague." },
+            { question: "5. Se a utilização do serviço de defesa nacional por um cidadão não diminui a sua utilidade para todos os outros, esta propriedade é designada por...", options: ["Não-exclusão", "Rivalidade", "Não-rivalidade", "Externalidade Neutra"], answer: "Não-rivalidade" },
+            { question: "6. Para internalizar uma externalidade negativa, como a poluição, o Estado pode aplicar um Imposto, que tem como objetivo...", options: ["Reduzir os custos privados da produção para incentivar.", "Aumentar os custos privados para igualar os custos sociais.", "Garantir a Equidade na distribuição de rendimento.", "Tornar o bem um 'Bem Privado' puro."], answer: "Aumentar os custos privados para igualar os custos sociais." },
+            { question: "7. Qual é o objetivo de um Subsídio dado pelo Estado a atividades que geram externalidades positivas, como a investigação científica?", options: ["Aumentar o preço de mercado para gerar mais receita fiscal.", "Diminuir o benefício social para reduzir a procura.", "Reduzir os custos privados da atividade para incentivar a produção.", "Resolver o problema do 'free-rider' num bem privado."], answer: "Reduzir os custos privados da atividade para incentivar a produção." },
+            { question: "8. O termo 'Falha de Mercado' descreve uma situação em que...", options: ["A concorrência é perfeita e o Estado não deve intervir.", "O mercado consegue alocar os recursos de forma eficiente.", "Os preços sobem rapidamente devido à inflação descontrolada.", "O mercado, deixado à sua sorte, não consegue alocar os recursos de forma eficiente."], answer: "O mercado, deixado à sua sorte, não consegue alocar os recursos de forma eficiente." },
+            { question: "9. A iluminação pública de uma rua é um exemplo clássico de Bem Público, pois apresenta as características de...", options: ["Rivalidade e Exclusão", "Não-exclusão e Rivalidade", "Não-rivalidade e Exclusão", "Não-exclusão e Não-rivalidade"], answer: "Não-exclusão e Não-rivalidade" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let startTime = 0;
+        let timerInterval;
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const questionText = document.getElementById('question-text');
+        const questionNumber = document.getElementById('question-number');
+        const optionsContainer = document.getElementById('options-container');
+        const timerDisplay = document.getElementById('timer');
+        const progressBar = document.getElementById('progress');
+        const totalQuestions = quizData.length;
+        
+        // --- FUNÇÕES DE RANKING (LOCAL STORAGE) ---
+        function getRanking() {
+            // Obtém o ranking do localStorage ou devolve um array vazio
+            const ranking = localStorage.getItem('quizRanking');
+            return ranking ? JSON.parse(ranking) : [];
+        }
+
+        function saveScore(finalScore, finalTimeSeconds) {
+            const ranking = getRanking();
+            const newEntry = {
+                score: finalScore,
+                time: finalTimeSeconds
+            };
+
+            ranking.push(newEntry);
+            
+            // Regra de ordenação: 1º por Score (descendente), 2º por Tempo (ascendente)
+            ranking.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score; // Maior score primeiro
+                }
+                return a.time - b.time; // Menor tempo primeiro
+            });
+
+            // Limita o ranking aos 5 melhores
+            const topRanking = ranking.slice(0, 5);
+            localStorage.setItem('quizRanking', JSON.stringify(topRanking));
+        }
+
+        function displayRanking() {
+            const ranking = getRanking();
+            const tbody = document.querySelector('#leaderboard tbody');
+            tbody.innerHTML = '';
+
+            if (ranking.length === 0) {
+                 const row = tbody.insertRow();
+                 const cell = row.insertCell();
+                 cell.colSpan = 3;
+                 cell.textContent = "Nenhum resultado registado ainda.";
+                 return;
+            }
+
+            ranking.forEach((entry, index) => {
+                const minutes = Math.floor(entry.time / 60);
+                const seconds = entry.time % 60;
+                const timeFormatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                
+                const row = tbody.insertRow();
+                row.insertCell().textContent = index + 1;
+                row.insertCell().textContent = `${entry.score} / ${totalQuestions}`;
+                row.insertCell().textContent = timeFormatted;
+            });
+        }
+        
+        // --- FUNÇÕES DO QUIZ ---
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsedTime = Date.now() - startTime;
+                const seconds = Math.floor(elapsedTime / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                timerDisplay.textContent = `Tempo: ${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function startQuiz() {
+            startScreen.style.display = 'none';
+            quizScreen.style.display = 'block';
+            startTimer();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= totalQuestions) {
+                showResults();
+                return;
+            }
+
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            // Atualizar barra de progresso
+            const progressPercentage = (currentQuestionIndex / totalQuestions) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+
+            questionNumber.textContent = `Pergunta ${currentQuestionIndex + 1} de ${totalQuestions}`;
+            questionText.textContent = currentQuestion.question.substring(currentQuestion.question.indexOf('.') + 2);
+
+            optionsContainer.innerHTML = '';
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.textContent = option;
+                button.onclick = () => checkAnswer(button, option, currentQuestion.answer);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedButton, selectedOption, correctAnswer) {
+            // Desativar todos os botões após a seleção
+            Array.from(optionsContainer.children).forEach(btn => btn.disabled = true);
+
+            if (selectedOption === correctAnswer) {
+                selectedButton.classList.add('correct');
+                score++;
+            } else {
+                selectedButton.classList.add('incorrect');
+                // Mostrar a resposta correta
+                Array.from(optionsContainer.children).forEach(btn => {
+                    if (btn.textContent === correctAnswer) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+
+            // Avançar para a próxima pergunta após um pequeno atraso
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 1500);
+        }
+
+        function showResults() {
+            clearInterval(timerInterval);
+            quizScreen.style.display = 'none';
+            resultsScreen.style.display = 'block';
+
+            const elapsedTime = Date.now() - startTime;
+            const totalSeconds = Math.floor(elapsedTime / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-time').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            progressBar.style.width = '100%'; // Completa a barra no final
+            
+            // 1. Guardar a pontuação no ranking
+            saveScore(score, totalSeconds);
+            
+            // 2. Apresentar o ranking
+            displayRanking();
+        }
+        
+        // Inicializa o ranking quando a página carrega, caso o utilizador esteja no ecrã de resultados (após um refresh)
+        if (resultsScreen.style.display !== 'none') {
+            displayRanking();
+        }
+    </script>
+
+</body>
+</html>
