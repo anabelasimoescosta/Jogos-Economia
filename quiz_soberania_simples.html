@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Simplificado da Soberania Nacional (15 Questões)</title>
+    <style>
+        /* Paleta de Cores VIBRANTE */
+        :root {
+            --cor-fundo-principal: #e3f2fd; /* Azul Claro */
+            --cor-container: #ffffff;
+            --cor-primaria: #007bff; /* Azul Forte */
+            --cor-secundaria: #ff3366; /* Rosa Shocking (Headers) */
+            --cor-acerto: #4CAF50; /* Verde Acerto */
+            --cor-erro: #F44336; /* Vermelho Erro */
+            --cor-botao: #9c27b0; /* Roxo principal */
+            --cor-destaque-selecao: #ffc107; /* Amarelo Forte */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--cor-fundo-principal);
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            width: 85%;
+            max-width: 950px;
+            margin: 40px auto;
+            background-color: var(--cor-container);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: var(--cor-secundaria);
+            border-bottom: 3px solid var(--cor-destaque-selecao);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+        h3 {
+            color: var(--cor-primaria);
+            margin-top: 25px;
+        }
+        #jogo, #resultado-final {
+            display: none; 
+        }
+        #capa {
+            display: block; 
+        }
+        
+        /* Botão INICIAR */
+        .capa-botao {
+            padding: 15px 35px;
+            font-size: 1.2em;
+            background-color: var(--cor-secundaria);
+            color: white;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        .capa-botao:hover {
+            background-color: #d62050;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            transition: opacity 0.3s, transform 0.1s;
+            font-weight: bold;
+            margin: 5px;
+            background-color: var(--cor-botao);
+            color: white;
+        }
+        
+        .decisao-opcoes {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .decisao-opcoes button {
+            flex-grow: 1;
+            min-width: 250px;
+        }
+        .decisao-opcoes button:hover:not(:disabled) {
+            opacity: 0.85;
+        }
+
+        /* Feedback e Cronómetro */
+        .feedback {
+            margin: 15px 0;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            color: white;
+            opacity: 0.95;
+            font-size: 1.1em;
+        }
+        #cronometro {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--cor-secundaria);
+        }
+        .selected-choice {
+            border: 4px solid var(--cor-destaque-selecao) !important;
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Botão Próxima Decisão */
+        #botao-proxima {
+            background-color: var(--cor-primaria);
+            color: white;
+            margin-top: 30px;
+            font-size: 1.1em;
+        }
+        #botao-proxima:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="capa">
+            <h1>Quiz Simplificado da Soberania Nacional</h1>
+            <p><strong>Curso de Gestão, 11.º Ano</strong> | Foco: Funções, Mandatos e Nomes.</p>
+            <hr>
+            <h2>15 Questões. 150 Pontos.</h2>
+
+            <div class="capa-scenario">
+                <p>Neste jogo, tens de identificar a resposta correta para cada uma das 15 questões sobre os <strong>4 Órgãos de Soberania Portugueses</strong> (PR, AR, G, T). As informações sobre nomes estão atualizadas para Outubro de 2025.</p>
+            </div>
+            <button class="capa-botao" onclick="iniciarJogo()">Iniciar Jogo</button>
+        </div>
+
+        <div id="jogo">
+            <h2>Questão <span id="num-decisao">1</span> de 15</h2>
+            <div id="cronometro">Tempo de Jogo: 00:00</div>
+            <hr>
+
+            <div id="pergunta-container">
+                <p><strong>Pergunta:</strong> <span id="contexto-decisao">Pergunta sobre funções e órgãos...</span></p>
+                
+                <h3>Qual a Opção Correta? (10 pontos)</h3>
+                <div id="opcoes-decisao" class="decisao-opcoes">
+                    </div>
+            </div>
+
+            <div class="feedback" id="feedback-acao"></div>
+            
+            <button id="botao-proxima" onclick="proximaDecisao()" style="display:none;">Próxima Questão (➜)</button>
+        </div>
+
+        <div id="resultado-final">
+            <h2>FIM DO QUIZ!</h2>
+            <p>As 15 questões foram concluídas.</p>
+            <h3>Resultados:</h3>
+            <p>Pontuação Total: <span id="pontuacao-final" style="font-size: 1.8em; color: var(--cor-acerto);">0</span> pontos (máximo 150).</p>
+            <p>Tempo Total: <span id="tempo-final" style="font-size: 1.8em; color: var(--cor-secundaria);">00:00</span>.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- Variáveis Globais ---
+        let pontuacao = 0;
+        let decisaoAtual = 0;
+        let tempoInicial;
+        let cronometroInterval;
+        let estadoDecisao = { acao: null }; // Simplificado para apenas uma escolha por pergunta
+        const maxPerguntas = 15;
+
+        // --- Estrutura das 15 Decisões (Foco: Nomes, Mandatos e Funções) ---
+        const decisoes = [
+            // 1. PR (Nome 2025)
+            {
+                contexto: "Qual o nome do Presidente da República em Portugal em Outubro de 2025?",
+                opcoes1: [
+                    { texto: "Luís Montenegro", correto: false, valor: 'LM' },
+                    { texto: "Marcelo Rebelo de Sousa", correto: true, valor: 'MRS' },
+                    { texto: "António Costa", correto: false, valor: 'AC' }
+                ]
+            },
+            // 2. AR (Função)
+            {
+                contexto: "Qual é a função principal e exclusiva da Assembleia da República?",
+                opcoes1: [
+                    { texto: "Conduzir a política geral do País.", correto: false, valor: 'G' },
+                    { texto: "Administrar a Justiça e resolver conflitos.", correto: false, valor: 'T' },
+                    { texto: "Legislar (criar leis) e aprovar o Orçamento de Estado.", correto: true, valor: 'AR' }
+                ]
+            },
+            // 3. G (Mandato)
+            {
+                contexto: "A duração do mandato do Governo (legislatura) é, no máximo, de:",
+                opcoes1: [
+                    { texto: "5 anos", correto: false, valor: '5A' },
+                    { texto: "6 anos", correto: false, valor: '6A' },
+                    { texto: "4 anos", correto: true, valor: '4A' }
+                ]
+            },
+            // 4. T (Função)
+            {
+                contexto: "Qual órgão tem a competência de fiscalizar a constitucionalidade das leis e normas?",
+                opcoes1: [
+                    { texto: "Presidente da República.", correto: false, valor: 'PR' },
+                    { texto: "Governo.", correto: false, valor: 'G' },
+                    { texto: "Tribunais (especialmente o Tribunal Constitucional).", correto: true, valor: 'T' }
+                ]
+            },
+            // 5. PR (Mandato)
+            {
+                contexto: "Quantos anos dura o mandato do Presidente da República?",
+                opcoes1: [
+                    { texto: "4 anos", correto: false, valor: '4A' },
+                    { texto: "5 anos", correto: true, valor: '5A' },
+                    { texto: "6 anos", correto: false, valor: '6A' }
+                ]
+            },
+            // 6. G (Função)
+            {
+                contexto: "Qual destas funções é competência do Governo?",
+                opcoes1: [
+                    { texto: "Julgar o recurso de uma multa de trânsito.", correto: false, valor: 'J' },
+                    { texto: "Dissolver a Assembleia da República.", correto: false, valor: 'D' },
+                    { texto: "Conduzir a política geral do País e administrar o Estado.", correto: true, valor: 'GPP' }
+                ]
+            },
+            // 7. AR (Mandato Limite)
+            {
+                contexto: "Uma legislatura (mandato dos Deputados) pode ser renovada um número ilimitado de vezes?",
+                opcoes1: [
+                    { texto: "Sim, se tiver maioria absoluta.", correto: false, valor: 'S' },
+                    { texto: "Não, apenas duas vezes consecutivas.", correto: false, valor: 'N2' },
+                    { texto: "Sim, sem limite específico para o Deputado, apenas para o órgão (4 anos).", correto: true, valor: 'SN' }
+                ]
+            },
+            // 8. PR (Função - Veto)
+            {
+                contexto: "Que mecanismo pode o PR usar para discordar de uma lei aprovada na AR, obrigando a nova votação?",
+                opcoes1: [
+                    { texto: "Revogação por Decreto-Lei.", correto: false, valor: 'DL' },
+                    { texto: "Veto Político e devolução da lei.", correto: true, valor: 'VP' },
+                    { texto: "Aprovação de uma Resolução.", correto: false, valor: 'RES' }
+                ]
+            },
+            // 9. G (Nome PM 2025)
+            {
+                contexto: "O Primeiro-Ministro que chefia o Governo em Outubro de 2025 é:",
+                opcoes1: [
+                    { texto: "António Costa", correto: false, valor: 'AC' },
+                    { texto: "Luís Montenegro", correto: true, valor: 'LM' },
+                    { texto: "Marcelo Rebelo de Sousa", correto: false, valor: 'MRS' }
+                ]
+            },
+            // 10. AR (Competência Orçamento)
+            {
+                contexto: "Qual órgão de soberania tem a competência para aprovar a Lei do Orçamento de Estado anual?",
+                opcoes1: [
+                    { texto: "Governo.", correto: false, valor: 'G' },
+                    { texto: "Assembleia da República.", correto: true, valor: 'AR' },
+                    { texto: "Tribunal de Contas.", correto: false, valor: 'TC' }
+                ]
+            },
+            // 11. T (Função - Justiça)
+            {
+                contexto: "Qual é a função do Tribunal Constitucional no sistema político?",
+                opcoes1: [
+                    { texto: "Negociar tratados internacionais.", correto: false, valor: 'NI' },
+                    { texto: "Garantir a supremacia da Constituição.", correto: true, valor: 'SC' },
+                    { texto: "Presidir ao Conselho de Estado.", correto: false, valor: 'PCE' }
+                ]
+            },
+            // 12. PR (Limites - Reeleição)
+            {
+                contexto: "Qual o limite máximo de mandatos consecutivos que um Presidente da República pode exercer?",
+                opcoes1: [
+                    { texto: "Um mandato (5 anos).", correto: false, valor: '1M' },
+                    { texto: "Três mandatos (15 anos).", correto: false, valor: '3M' },
+                    { texto: "Dois mandatos (10 anos).", correto: true, valor: '2M' }
+                ]
+            },
+            // 13. G (Decisões)
+            {
+                contexto: "O órgão colegial máximo do Governo, onde são tomadas as decisões políticas, chama-se:",
+                opcoes1: [
+                    { texto: "Conselho de Estado.", correto: false, valor: 'CE' },
+                    { texto: "Conselho de Ministros.", correto: true, valor: 'CM' },
+                    { texto: "Conselho Superior de Defesa Nacional.", correto: false, valor: 'CSDN' }
+                ]
+            },
+            // 14. T (Princípio)
+            {
+                contexto: "O princípio de que os Tribunais são independentes de qualquer outro órgão de soberania denomina-se:",
+                opcoes1: [
+                    { texto: "Princípio do Veto.", correto: false, valor: 'PV' },
+                    { texto: "Princípio da Separação de Poderes.", correto: false, valor: 'PSP' },
+                    { texto: "Princípio da Separação e Independência (Poder Judicial).", correto: true, valor: 'PSIPJ' }
+                ]
+            },
+            // 15. AR (Composição)
+            {
+                contexto: "A Assembleia da República é o órgão composto por:",
+                opcoes1: [
+                    { texto: "Ministros e Secretários de Estado.", correto: false, valor: 'MSE' },
+                    { texto: "Juízes Conselheiros.", correto: false, valor: 'JC' },
+                    { texto: "Deputados.", correto: true, valor: 'D' }
+                ]
+            },
+        ];
+
+        // --- Funções de Controlo do Jogo ---
+
+        function iniciarJogo() {
+            document.getElementById('capa').style.display = 'none';
+            document.getElementById('jogo').style.display = 'block'; 
+            
+            tempoInicial = Date.now();
+            iniciarCronometro();
+            carregarDecisao();
+        }
+
+        function iniciarCronometro() {
+            cronometroInterval = setInterval(() => {
+                const tempoDecorrido = Date.now() - tempoInicial;
+                const totalSegundos = Math.floor(tempoDecorrido / 1000);
+                const minutos = String(Math.floor(totalSegundos / 60)).padStart(2, '0');
+                const segundos = String(totalSegundos % 60).padStart(2, '0');
+                document.getElementById('cronometro').textContent = `Tempo de Jogo: ${minutos}:${segundos}`;
+            }, 1000);
+        }
+
+        function pararCronometro() {
+            clearInterval(cronometroInterval);
+            const tempoDecorrido = Date.now() - tempoInicial;
+            return Math.floor(tempoDecorrido / 1000); 
+        }
+
+        function carregarDecisao() {
+            if (decisaoAtual < decisoes.length) {
+                const decisao = decisoes[decisaoAtual];
+                estadoDecisao = { acao: null }; // Reset do estado
+                
+                // Atualizar ecrã
+                document.getElementById('num-decisao').textContent = decisaoAtual + 1;
+                document.getElementById('contexto-decisao').textContent = decisao.contexto;
+                document.getElementById('feedback-acao').textContent = "";
+                document.getElementById('botao-proxima').style.display = 'none';
+
+                // Limpar e carregar Opções
+                const opcoesDecisaoDiv = document.getElementById('opcoes-decisao');
+                opcoesDecisaoDiv.innerHTML = ""; 
+                decisao.opcoes1.forEach(opcao => {
+                    const btn = document.createElement('button');
+                    btn.textContent = opcao.texto;
+                    // Simplificado: tipo é sempre 'acao'
+                    btn.setAttribute('onclick', `tomarDecisao(this, '${opcao.valor}', ${opcao.correto})`);
+                    opcoesDecisaoDiv.appendChild(btn);
+                });
+                
+                // Reativar botões
+                const botoes = document.querySelectorAll('.decisao-opcoes button');
+                botoes.forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('selected-choice');
+                });
+
+            } else {
+                finalizarJogo();
+            }
+        }
+
+        // Funçao de decisão simplificada para uma única escolha
+        function tomarDecisao(elemento, valor, isCorrect) {
+            
+            // 1. Impedir duplo clique
+            if (estadoDecisao.acao !== null) {
+                 return;
+            }
+
+            const feedbackDiv = document.getElementById(`feedback-acao`);
+            
+            // 2. Desabilitar todos os botões do mesmo grupo após a escolha
+            elemento.parentNode.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true; 
+            });
+
+            // 3. Aplicar destaque e guardar a escolha
+            elemento.classList.add('selected-choice');
+            estadoDecisao.acao = valor;
+
+            // 4. Verificar Correção e Pontuar
+            if (isCorrect) {
+                pontuacao += 10;
+                feedbackDiv.textContent = `RESPOSTA CORRETA! (+10 pontos)`;
+                feedbackDiv.style.backgroundColor = "var(--cor-acerto)";
+                
+            } else {
+                feedbackDiv.textContent = `RESPOSTA INCORRETA.`;
+                feedbackDiv.style.backgroundColor = "var(--cor-erro)";
+            }
+            
+            // 5. Ativar o botão Próxima Questão
+            document.getElementById('botao-proxima').style.display = 'block';
+        }
+
+        function proximaDecisao() {
+            decisaoAtual++;
+            if (decisaoAtual < decisoes.length) {
+                carregarDecisao();
+            } else {
+                finalizarJogo();
+            }
+        }
+
+        function finalizarJogo() {
+            const tempoTotalSegundos = pararCronometro();
+            const minutos = String(Math.floor(tempoTotalSegundos / 60)).padStart(2, '0');
+            const segundos = String(tempoTotalSegundos % 60).padStart(2, '0');
+            const tempoFormatado = `${minutos}:${segundos}`;
+
+            document.getElementById('jogo').style.display = 'none';
+            document.getElementById('resultado-final').style.display = 'block';
+
+            document.getElementById('pontuacao-final').textContent = pontuacao;
+            document.getElementById('tempo-final').textContent = tempoFormatado;
+        }
+
+    </script>
+</body>
+</html>
