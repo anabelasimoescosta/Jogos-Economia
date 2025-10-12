@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz do Orçamento do Estado</title>
+    <style>
+        :root {
+            --color-primary: #3498db; /* Azul */
+            --color-secondary: #2ecc71; /* Verde */
+            --color-accent: #f39c12; /* Laranja */
+            --color-background: #ecf0f1; /* Cinza Claro */
+            --color-text: #2c3e50; /* Azul Escuro */
+            --color-success: #1abc9c; /* Turquesa */
+            --color-error: #e74c3c; /* Vermelho */
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            transition: all 0.3s ease;
+        }
+        h1 {
+            color: var(--color-primary);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        #question-box {
+            min-height: 150px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--color-background);
+            padding-bottom: 15px;
+        }
+        .question-text {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: var(--color-accent);
+        }
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 8px;
+            background-color: #f7f9f9;
+            color: var(--color-text);
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-size: 1em;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .option-btn:hover:not(.disabled) {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+        }
+        .option-btn.correct {
+            background-color: var(--color-success);
+            color: white;
+            animation: pulse-green 0.5s;
+        }
+        .option-btn.incorrect {
+            background-color: var(--color-error);
+            color: white;
+            animation: shake 0.5s;
+        }
+        .bravo-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5em;
+            font-weight: bold;
+            color: var(--color-success);
+            text-shadow: 4px 4px var(--color-accent);
+            opacity: 0;
+            z-index: 1000;
+            pointer-events: none;
+            animation: fade-in-out 1.5s ease-out;
+        }
+        .rationale {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            line-height: 1.4;
+            background-color: #f0f8ff;
+            border-left: 5px solid var(--color-primary);
+        }
+        .rationale strong {
+            color: var(--color-primary);
+        }
+        .hidden {
+            display: none;
+        }
+        .final-results h2 {
+            color: var(--color-secondary);
+        }
+        .final-results button {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        @keyframes fade-in-out {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>Quiz: Orçamento do Estado</h1>
+
+    <div id="start-screen">
+        <p>Bem-vindo ao Quiz do Orçamento do Estado! O objetivo é responder a 15 perguntas corretamente no menor tempo possível.</p>
+        <button class="option-btn" onclick="startGame()">Começar o Jogo</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div class="info-bar">
+            <span id="score">Pontuação: 0</span>
+            <span id="timer">Tempo: 0s</span>
+        </div>
+        <div id="question-box">
+            <div class="question-text" id="question-number"></div>
+            <div class="question-text" id="question-text"></div>
+        </div>
+        <div id="answer-options">
+            </div>
+        <div id="feedback" class="hidden">
+            <button class="option-btn" style="background-color: var(--color-primary); color: white; margin-top: 15px;" onclick="nextQuestion()">Próxima Pergunta</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden final-results">
+        <h2>Resultados Finais!</h2>
+        <p id="final-score"></p>
+        <p id="final-time"></p>
+        <button onclick="window.location.reload()">Jogar Novamente</button>
+    </div>
+
+    <div id="bravo-popup" class="bravo-message hidden">BRAVO!</div>
+</div>
+
+<script>
+    const questions = [
+        {
+            question: "A quem compete, em Portugal, a elaboração do documento que prevê as receitas e despesas públicas para um determinado período?",
+            options: [
+                { text: "À Assembleia da República", isCorrect: false, rationale: "A Assembleia da República tem a competência de aprovar o Orçamento, não de o elaborar." },
+                { text: "Ao Governo (Administração Pública)", isCorrect: true, rationale: "Compete ao Governo elaborar o documento onde são previstas as receitas e as despesas públicas." },
+                { text: "Ao Presidente da República", isCorrect: false, rationale: "O Presidente da República promulga o diploma, mas não elabora o Orçamento." },
+                { text: "Ao Tribunal de Contas", isCorrect: false, rationale: "O Tribunal de Contas fiscaliza a execução do Orçamento, mas não o elabora." }
+            ]
+        },
+        {
+            question: "Que entidade em Portugal compete aprovar anualmente o Orçamento do Estado?",
+            options: [
+                { text: "O Governo", isCorrect: false, rationale: "O Governo elabora o Orçamento, mas a sua aprovação final é de competência do órgão representativo dos cidadãos." },
+                { text: "O Conselho de Estado", isCorrect: false, rationale: "O Conselho de Estado é um órgão consultivo do Presidente da República e não tem competência para aprovar o Orçamento." },
+                { text: "A Assembleia da República", isCorrect: true, rationale: "Em Portugal, a Assembleia da República, como representante dos cidadãos, é a entidade que aprova anualmente o Orçamento do Estado." },
+                { text: "O Banco de Portugal", isCorrect: false, rationale: "O Banco de Portugal tem funções na política monetária e supervisão, não na aprovação do Orçamento." }
+            ]
+        },
+        {
+            question: "Qual o nome do documento que constitui um instrumento económico e social do Estado e onde são previstas as despesas e receitas para um determinado período de tempo, geralmente um ano?",
+            options: [
+                { text: "Balança de Pagamentos", isCorrect: false, rationale: "A Balança de Pagamentos regista transações económicas internacionais, não o plano de receitas e despesas do Estado." },
+                { text: "Plano Plurianual", isCorrect: false, rationale: "O Plano Plurianual cobre vários anos, mas o documento anual é o Orçamento do Estado." },
+                { text: "Orçamento do Estado", isCorrect: true, rationale: "O Orçamento do Estado é o documento fundamental onde são previstas as despesas e receitas do Estado para um determinado período." },
+                { text: "Relatório de Contas Públicas", isCorrect: false, rationale: "O Relatório de Contas Públicas é um documento de prestação de contas após a execução orçamental." }
+            ]
+        },
+        {
+            question: "Os meios financeiros de que o Estado dispõe para financiar as suas despesas são designados por:",
+            options: [
+                { text: "Despesas públicas", isCorrect: false, rationale: "Despesas públicas são os gastos realizados, não os meios financeiros para os cobrir." },
+                { text: "Transferências sociais", isCorrect: false, rationale: "Transferências sociais são um tipo de despesa pública." },
+                { text: "Receitas públicas", isCorrect: true, rationale: "Receitas públicas são os meios financeiros de que o Estado dispõe para financiar as despesas públicas." },
+                { text: "Impostos indiretos", isCorrect: false, rationale: "Impostos indiretos são uma fonte de receita, mas o termo geral é Receitas públicas." }
+            ]
+        },
+        {
+            question: "Qual dos seguintes é um exemplo de Receita Corrente?",
+            options: [
+                { text: "Transferências de fundos da União Europeia para investimento em infraestruturas", isCorrect: false, rationale: "Os fundos da UE para investimento são geralmente recebimentos ocasionais, classificando-se como Receitas de Capital." },
+                { text: "Resultados de vendas de bens e serviços (como madeira das matas nacionais)", isCorrect: true, rationale: "As receitas provenientes de vendas de bens e serviços do Estado que se renovam anualmente são classificadas como Receitas Correntes." },
+                { text: "Recebimentos provenientes da venda de imóveis", isCorrect: false, rationale: "A venda de imóveis é um recebimento ocasional, sendo uma Receita de Capital." },
+                { text: "Reembolso de empréstimos concedidos pelo Estado", isCorrect: false, rationale: "O reembolso de um empréstimo é uma Receita de Capital, pois não se renova anualmente." }
+            ]
+        },
+        {
+            question: "Os recebimentos ocasionais, como os provenientes da venda de imóveis ou de transferências da União Europeia para apoiar o investimento, são classificados como:",
+            options: [
+                { text: "Receitas Fiscais", isCorrect: false, rationale: "Receitas fiscais são impostos. Estes recebimentos são de outra natureza." },
+                { text: "Receitas Correntes", isCorrect: false, rationale: "Receitas Correntes renovam-se em todos os períodos financeiros. Estes são ocasionais." },
+                { text: "Receitas de Capital", isCorrect: true, rationale: "Receitas de Capital são recebimentos de natureza ocasional, tipicamente associados a vendas de bens de investimento ou transferências para investimento." },
+                { text: "Contribuições Sociais", isCorrect: false, rationale: "Contribuições sociais são receitas que se renovam, sendo Correntes." }
+            ]
+        },
+        {
+            question: "Qual a principal diferença entre Despesas Correntes e Despesas de Capital, tendo em conta os seus efeitos no tempo?",
+            options: [
+                { text: "As Correntes são para investimento e as de Capital são para consumo.", isCorrect: false, rationale: "É o contrário: as de Capital são para investimento, as Correntes são para funcionamento/consumo." },
+                { text: "As Correntes realizam-se num ano e os seus efeitos perduram nos anos seguintes, ao contrário das de Capital.", isCorrect: false, rationale: "Os efeitos das Despesas de Capital é que perduram nos anos seguintes." },
+                { text: "As Correntes terminam no mesmo ano, enquanto os efeitos das Despesas de Capital perduram nos anos seguintes.", isCorrect: true, rationale: "O texto indica que as Despesas Correntes terminam nesse ano, enquanto as de Capital (como investimento) perduram nos anos seguintes." },
+                { text: "As Correntes são gastos com bens duradouros e as de Capital com bens não duradouros.", isCorrect: false, rationale: "As Correntes incluem compra de bens não duradouros; as de Capital incluem bens duradouros/investimento." }
+            ]
+        },
+        {
+            question: "Os vencimentos dos funcionários públicos e o pagamento de juros da dívida pública são exemplos de que tipo de despesa?",
+            options: [
+                { text: "Despesas de Capital", isCorrect: false, rationale: "Despesas de Capital são gastos cujos efeitos perduram, como investimento." },
+                { text: "Transferências de Capital", isCorrect: false, rationale: "Transferências de Capital são um subtipo de Despesa de Capital." },
+                { text: "Despesas Correntes", isCorrect: true, rationale: "Os vencimentos e o pagamento de juros são gastos que se efetuam e terminam dentro do mesmo ano, sendo Despesas Correntes." },
+                { text: "Investimento em capital fixo", isCorrect: false, rationale: "O investimento em capital fixo é uma Despesa de Capital." }
+            ]
+        },
+        {
+            question: "O Imposto sobre o Rendimento das Pessoas Singulares (IRS) e o Imposto Municipal sobre Imóveis (IMI) são exemplos de:",
+            options: [
+                { text: "Impostos Indiretos", isCorrect: false, rationale: "Impostos Indiretos incidem sobre o consumo ou despesa." },
+                { text: "Taxas", isCorrect: false, rationale: "Taxas são pagamentos por um serviço específico. Os impostos não têm contrapartida direta." },
+                { text: "Impostos sobre o Consumo", isCorrect: false, rationale: "O IRS incide sobre o rendimento e o IMI sobre o património, não sobre o consumo." },
+                { text: "Impostos Diretos", isCorrect: true, rationale: "Estes impostos incidem sobre o rendimento (IRS) ou o património (IMI), com matéria coletável perfeitamente determinada, sendo Diretos." }
+            ]
+        },
+        {
+            question: "Os impostos indiretos incidem sobre o quê?",
+            options: [
+                { text: "Os rendimentos dos contribuintes", isCorrect: false, rationale: "Os impostos que incidem sobre os rendimentos são os diretos (IRS, IRC)." },
+                { text: "O consumo, produção ou despesa", isCorrect: true, rationale: "O texto define os impostos indiretos como os que incidem sobre o consumo, produção ou despesa (ex: IVA, ISP)." },
+                { text: "O património das pessoas coletivas", isCorrect: false, rationale: "O imposto sobre o património (como o IMI) é um imposto direto." },
+                { text: "O saldo orçamental", isCorrect: false, rationale: "O saldo orçamental é o resultado da diferença entre receitas e despesas, não a matéria coletável de um imposto." }
+            ]
+        },
+        {
+            question: "O que caracteriza um imposto progressivo, como o IRS?",
+            options: [
+                { text: "A incidência sobre o consumo de bens e serviços essenciais.", isCorrect: false, rationale: "Isto é uma característica de impostos indiretos (regressivos) como o IVA." },
+                { text: "A aplicação de uma taxa uniforme, independentemente do rendimento.", isCorrect: false, rationale: "Isto caracteriza impostos proporcionais ou a forma de aplicação de impostos regressivos." },
+                { text: "A aplicação de uma taxa maior sobre os maiores rendimentos.", isCorrect: true, rationale: "Os impostos progressivos, como o IRS, aplicam taxas crescentes à medida que o rendimento aumenta." },
+                { text: "O peso do imposto no rendimento das famílias diminui quando o rendimento é maior.", isCorrect: false, rationale: "Isto é a definição de um imposto regressivo." }
+            ]
+        },
+        {
+            question: "Qual a razão principal pela qual o Imposto sobre o Valor Acrescentado (IVA) é considerado um imposto regressivo?",
+            options: [
+                { text: "Porque só incide sobre produtos de luxo.", isCorrect: false, rationale: "O IVA incide sobre a maioria dos bens e serviços, não apenas luxo." },
+                { text: "Porque a taxa de imposto diminui com o aumento do rendimento.", isCorrect: false, rationale: "A taxa de IVA é fixa por produto, mas o seu peso relativo diminui." },
+                { text: "Porque todas as pessoas pagam a mesma taxa, fazendo com que o seu peso no rendimento diminua para as famílias mais ricas.", isCorrect: true, rationale: "Como todas as pessoas pagam o mesmo valor de IVA por um produto, o seu peso (proporção) no rendimento das famílias de alto rendimento é menor, tornando-o regressivo." },
+                { text: "Porque incide sobre o rendimento, e não sobre o consumo.", isCorrect: false, rationale: "O IVA é um imposto sobre o consumo, não sobre o rendimento." }
+            ]
+        },
+        {
+            question: "Se as receitas públicas excederem as despesas públicas num determinado ano, o saldo orçamental é positivo. Como se designa esta situação?",
+            options: [
+                { text: "Défice", isCorrect: false, rationale: "O défice ocorre quando as despesas excedem as receitas (saldo negativo)." },
+                { text: "Equilíbrio", isCorrect: false, rationale: "O equilíbrio ocorre quando receitas e despesas são iguais (saldo nulo)." },
+                { text: "Superavit", isCorrect: true, rationale: "Quando as receitas públicas excedem as despesas públicas, o saldo orçamental é positivo, o que se designa por superavit." },
+                { text: "Dívida pública", isCorrect: false, rationale: "A dívida pública é o passivo do Estado, não o resultado positivo anual." }
+            ]
+        },
+        {
+            question: "O Saldo Orçamental de Capital é calculado pela diferença entre:",
+            options: [
+                { text: "Receitas totais e Despesas totais", isCorrect: false, rationale: "Esta é a definição do Saldo Orçamental Total, não do Saldo de Capital." },
+                { text: "Receitas correntes e Despesas correntes", isCorrect: false, rationale: "Esta é a definição do Saldo Orçamental Corrente." },
+                { text: "Receitas de capital e Despesas de capital", isCorrect: true, rationale: "O Saldo Orçamental de Capital é especificamente a diferença entre as receitas e as despesas que são de natureza de capital." },
+                { text: "Impostos diretos e Impostos indiretos", isCorrect: false, rationale: "Esta diferença não define um saldo orçamental." }
+            ]
+        },
+        {
+            question: "Qual o principal efeito do investimento público e dos gastos públicos (como aumento de vencimentos) na atividade económica do país, segundo o texto?",
+            options: [
+                { text: "Aumento do Défice e da Dívida Pública", isCorrect: false, rationale: "Embora possa causar défice, o texto foca-se no efeito positivo na atividade económica." },
+                { text: "Diminuição das Receitas Fiscais", isCorrect: false, rationale: "Um aumento da atividade económica tenderia a aumentar as receitas fiscais." },
+                { text: "Desaceleração da procura e da produção", isCorrect: false, rationale: "O texto afirma o efeito oposto, que é estimular a procura." },
+                { text: "Dinamização da economia, criando emprego e aumentando a produção", isCorrect: true, rationale: "O texto refere que os gastos e o investimento público estimulam a procura, contribuindo para a dinamização da economia, criando emprego e aumentando a produção." }
+            ]
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let startTime;
+    let timerInterval;
+
+    const startScreen = document.getElementById('start-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const questionTextElement = document.getElementById('question-text');
+    const questionNumberElement = document.getElementById('question-number');
+    const optionsContainer = document.getElementById('answer-options');
+    const scoreElement = document.getElementById('score');
+    const timerElement = document.getElementById('timer');
+    const feedbackBox = document.getElementById('feedback');
+    const bravoPopup = document.getElementById('bravo-popup');
+
+    function startGame() {
+        startScreen.classList.add('hidden');
+        quizScreen.classList.remove('hidden');
+        currentQuestionIndex = 0;
+        score = 0;
+        startTime = Date.now();
+        updateScore();
+        startTimer();
+        showQuestion();
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            timerElement.textContent = `Tempo: ${elapsedTime}s`;
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
+
+    function updateScore() {
+        scoreElement.textContent = `Pontuação: ${score}/${questions.length}`;
+    }
+
+    function showQuestion() {
+        feedbackBox.classList.add('hidden');
+        const q = questions[currentQuestionIndex];
+        questionNumberElement.textContent = `Pergunta ${currentQuestionIndex + 1} de ${questions.length}`;
+        questionTextElement.textContent = q.question;
+        optionsContainer.innerHTML = '';
+
+        q.options.forEach(option => {
+            const button = document.createElement('button');
+            button.classList.add('option-btn');
+            button.textContent = option.text;
+            button.onclick = () => checkAnswer(button, option.isCorrect, option.rationale);
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function checkAnswer(selectedButton, isCorrect, rationale) {
+        // Desativar todos os botões após a seleção
+        Array.from(optionsContainer.children).forEach(btn => {
+            btn.classList.add('disabled');
+            btn.onclick = null;
+        });
+
+        // Aplicar estilos de correto/incorreto
+        selectedButton.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+        // Encontrar e marcar a resposta correta se a selecionada estiver errada
+        if (!isCorrect) {
+            const correctOption = questions[currentQuestionIndex].options.find(opt => opt.isCorrect);
+            Array.from(optionsContainer.children).find(btn => btn.textContent === correctOption.text).classList.add('correct');
+        }
+
+        if (isCorrect) {
+            score++;
+            updateScore();
+            showBravo();
+        }
+
+        // Mostrar feedback/racional
+        feedbackBox.innerHTML = `<div class="rationale"><strong>Explicação:</strong> ${rationale}</div>`;
+        feedbackBox.innerHTML += `<button class="option-btn" style="background-color: var(--color-primary); color: white; margin-top: 15px;" onclick="nextQuestion()">Próxima Pergunta</button>`;
+        feedbackBox.classList.remove('hidden');
+    }
+
+    function showBravo() {
+        bravoPopup.classList.remove('hidden');
+        setTimeout(() => {
+            bravoPopup.classList.add('hidden');
+        }, 1500);
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        stopTimer();
+        quizScreen.classList.add('hidden');
+        resultScreen.classList.remove('hidden');
+
+        const finalTime = Math.floor((Date.now() - startTime) / 1000);
+        
+        document.getElementById('final-score').textContent = `Acertaste ${score} de ${questions.length} perguntas.`;
+        document.getElementById('final-time').textContent = `O teu tempo total foi de ${finalTime} segundos.`;
+    }
+</script>
+
+</body>
+</html>
