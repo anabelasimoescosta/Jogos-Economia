@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V ou F: Orçamento do Estado</title>
+    <style>
+        :root {
+            --color-primary: #3498db; /* Azul */
+            --color-secondary: #2ecc71; /* Verde - V */
+            --color-accent: #f39c12; /* Laranja */
+            --color-background: #ecf0f1; /* Cinza Claro */
+            --color-text: #2c3e50; /* Azul Escuro */
+            --color-success: #1abc9c; /* Turquesa */
+            --color-error: #e74c3c; /* Vermelho - F */
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .game-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 750px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        h1 {
+            color: var(--color-primary);
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+        #statement-box {
+            background-color: var(--color-background);
+            border: 2px solid var(--color-primary);
+            color: var(--color-text);
+            padding: 30px 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        .term-statement {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: var(--color-accent);
+            padding: 0 10px;
+        }
+        #answer-options {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+        }
+        .option-btn {
+            flex: 1;
+            padding: 25px 15px;
+            border: none;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-size: 2em;
+            font-weight: 900;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.2);
+        }
+        .option-btn:hover:not(.disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 rgba(0, 0, 0, 0.2);
+        }
+        .option-btn:active:not(.disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        /* Cores V (Verdadeiro) e F (Falso) */
+        .btn-true { background-color: var(--color-secondary); }
+        .btn-false { background-color: var(--color-error); }
+
+        .bravo-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 6em;
+            font-weight: bold;
+            color: var(--color-success);
+            text-shadow: 6px 6px var(--color-accent);
+            opacity: 0;
+            z-index: 1000;
+            pointer-events: none;
+            animation: fade-in-out 1.5s ease-out;
+        }
+        .rationale-text {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1em;
+            line-height: 1.4;
+            background-color: #f0f8ff;
+            border-left: 5px solid var(--color-primary);
+            text-align: left;
+        }
+        .rationale-text strong {
+            color: var(--color-primary);
+        }
+        .hidden {
+            display: none;
+        }
+        .final-results h2 {
+            color: var(--color-secondary);
+        }
+        .final-results button {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 25px;
+            font-size: 1.1em;
+        }
+        #start-screen .option-btn {
+            background-color: var(--color-primary);
+            color: white;
+            width: 50%;
+            margin: 20px auto 0;
+            display: block;
+            box-shadow: 0 5px 0 #2980b9;
+        }
+        #start-screen .option-btn:hover {
+            box-shadow: 0 7px 0 #2980b9;
+        }
+        #start-screen .option-btn:active {
+            box-shadow: 0 2px 0 #2980b9;
+        }
+        @keyframes fade-in-out {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+        }
+        .next-btn {
+            background-color: var(--color-primary) !important; 
+            color: white; 
+            margin-top: 15px; 
+            width: 50%; 
+            padding: 15px;
+            font-size: 1em;
+            box-shadow: 0 5px 0 #2980b9 !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>V ou F: Classifica os Conceitos</h1>
+
+    <div id="start-screen">
+        <p>Este é um jogo de Verdadeiro ou Falso. Serão apresentadas 15 afirmações sobre o Orçamento do Estado. O objetivo é indicar V (Verdadeiro) se a afirmação estiver correta, ou F (Falso) se estiver errada.</p>
+        <p>Use os botões coloridos para responder rapidamente e tente acertar o máximo possível no menor tempo!</p>
+        <button class="option-btn" onclick="startGame()">Começar o Jogo</button>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="info-bar">
+            <span id="question-number">Pergunta 1/15</span>
+            <span id="score">Pontuação: 0</span>
+            <span id="timer">Tempo: 0s</span>
+        </div>
+        
+        <div id="statement-box">
+            <p class="term-statement" id="current-statement"></p>
+        </div>
+
+        <div id="answer-options">
+            <button id="btn-true" class="option-btn btn-true" onclick="checkAnswer(true)">V (Verdadeiro)</button>
+            <button id="btn-false" class="option-btn btn-false" onclick="checkAnswer(false)">F (Falso)</button>
+        </div>
+
+        <div id="feedback-area" class="hidden">
+            <div id="rationale-text" class="rationale-text"></div>
+            <button class="option-btn next-btn" onclick="nextStatement()">Próxima Afirmação</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden final-results">
+        <h2>Resultados Finais!</h2>
+        <p id="final-score"></p>
+        <p id="final-time"></p>
+        <button onclick="window.location.reload()">Jogar Novamente</button>
+    </div>
+
+    <div id="bravo-popup" class="bravo-message hidden">BRAVO!</div>
+</div>
+
+<script>
+    const statements = [
+        {
+            statement: "O Orçamento do Estado é o documento elaborado pelo Governo, mas é aprovado pela Assembleia da República.",
+            isTrue: true,
+            rationale: "Compete ao Governo elaborar o documento, mas o texto afirma que deve ser aprovado pelos parlamentos, que em Portugal é a Assembleia da República."
+        },
+        {
+            statement: "As Receitas Correntes são montantes que o Estado recebe todos os anos, como as receitas fiscais (impostos).",
+            isTrue: true,
+            rationale: "As receitas correntes são definidas como montantes que se renovam em todos os períodos financeiros e incluem as receitas fiscais."
+        },
+        {
+            statement: "As Receitas de Capital incluem as verbas associadas às vendas de imóveis ou outros bens de investimento.",
+            isTrue: true,
+            rationale: "O texto define as receitas de capital como recebimentos ocasionais, como os que vêm da venda de imóveis ou transferências da UE para investimento."
+        },
+        {
+            statement: "Os vencimentos de funcionários públicos e as pensões de velhice são exemplos de Despesas Correntes.",
+            isTrue: true,
+            rationale: "Estes são gastos que se efetuam ao longo de um determinado ano, mas terminam nesse mesmo ano, sendo despesas correntes."
+        },
+        {
+            statement: "As Despesas de Capital são gastos que se fazem sentir ao longo de um determinado ano, mas terminam nesse mesmo ano.",
+            isTrue: false,
+            rationale: "As Despesas de Capital são as que os seus efeitos perduram nos anos seguintes, como o investimento em infraestruturas."
+        },
+        {
+            statement: "O Imposto Direto incide sobre o consumo, produção ou despesa, como o Imposto sobre o Valor Acrescentado (IVA).",
+            isTrue: false,
+            rationale: "Os impostos que incidem sobre o consumo/despesa são os Indiretos. Os diretos incidem sobre o rendimento ou património."
+        },
+        {
+            statement: "O Imposto sobre o Rendimento das Pessoas Singulares (IRS) é um exemplo de Imposto Indireto.",
+            isTrue: false,
+            rationale: "O IRS incide sobre o rendimento (matéria coletável determinada), sendo um Imposto Direto."
+        },
+        {
+            statement: "Um Imposto Progressivo aplica uma taxa maior sobre os maiores rendimentos.",
+            isTrue: true,
+            rationale: "Esta é a definição de imposto progressivo, como o IRS, que visa diminuir as desigualdades sociais."
+        },
+        {
+            statement: "O Imposto sobre o consumo (IVA) é regressivo porque o seu peso no rendimento das famílias diminui quando o rendimento é maior.",
+            isTrue: true,
+            rationale: "Como a taxa de IVA é igual para todos, o seu peso relativo (proporção) no rendimento das famílias ricas é menor, tornando-o regressivo."
+        },
+        {
+            statement: "O Superavit Orçamental ocorre quando as receitas públicas são inferiores às despesas públicas.",
+            isTrue: false,
+            rationale: "Isso é a definição de Défice orçamental. O Superavit é quando as receitas excedem as despesas."
+        },
+        {
+            statement: "O Défice Orçamental leva, muitas vezes, à necessidade de o Estado recorrer à emissão de dívida pública (empréstimos).",
+            isTrue: true,
+            rationale: "Se o Estado gasta mais do que arrecada (défice), precisa de cobrir a diferença, muitas vezes recorrendo a empréstimos/dívida pública."
+        },
+        {
+            statement: "O Saldo Orçamental Corrente é a diferença entre as Receitas Correntes e as Despesas de Capital.",
+            isTrue: false,
+            rationale: "O Saldo Orçamental Corrente é a diferença entre Receitas Correntes e Despesas Correntes."
+        },
+        {
+            statement: "O Saldo Orçamental de Capital é igual à diferença entre as Receitas de Capital e as Despesas de Capital.",
+            isTrue: true,
+            rationale: "Esta é a definição dada no texto para o Saldo Orçamental de Capital."
+        },
+        {
+            statement: "A criação de emprego no setor público e os investimentos do Estado estimulam a procura e dinamizam a economia.",
+            isTrue: true,
+            rationale: "Os gastos e o investimento públicos dinamizam a economia, criando emprego e aumentando a produção (estimulando a procura)."
+        },
+        {
+            statement: "As receitas públicas são arrecadadas principalmente através de taxas, multas e transferências sociais.",
+            isTrue: false,
+            rationale: "O texto afirma que os impostos (receitas fiscais) constituem a principal fonte de receitas do Estado."
+        }
+    ];
+
+    let currentStatementIndex = 0;
+    let score = 0;
+    let startTime;
+    let timerInterval;
+
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const currentStatementElement = document.getElementById('current-statement');
+    const questionNumberElement = document.getElementById('question-number');
+    const scoreElement = document.getElementById('score');
+    const timerElement = document.getElementById('timer');
+    const feedbackArea = document.getElementById('feedback-area');
+    const rationaleText = document.getElementById('rationale-text');
+    const bravoPopup = document.getElementById('bravo-popup');
+    const btnTrue = document.getElementById('btn-true');
+    const btnFalse = document.getElementById('btn-false');
+
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function startGame() {
+        shuffleArray(statements);
+        currentStatementIndex = 0;
+        score = 0;
+        startTime = Date.now();
+        updateScore();
+        startTimer();
+        startScreen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        showStatement();
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            timerElement.textContent = `Tempo: ${elapsedTime}s`;
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
+
+    function updateScore() {
+        scoreElement.textContent = `Pontuação: ${score}`;
+        questionNumberElement.textContent = `Pergunta ${currentStatementIndex + 1}/${statements.length}`;
+    }
+
+    function enableButtons() {
+        btnTrue.onclick = () => checkAnswer(true);
+        btnFalse.onclick = () => checkAnswer(false);
+        btnTrue.classList.remove('disabled');
+        btnFalse.classList.remove('disabled');
+        btnTrue.style.opacity = '1';
+        btnFalse.style.opacity = '1';
+    }
+
+    function disableButtons() {
+        btnTrue.onclick = null;
+        btnFalse.onclick = null;
+        btnTrue.classList.add('disabled');
+        btnFalse.classList.add('disabled');
+    }
+
+    function showStatement() {
+        feedbackArea.classList.add('hidden');
+        currentStatementElement.textContent = statements[currentStatementIndex].statement;
+        currentStatementElement.parentElement.style.backgroundColor = 'var(--color-background)'; 
+        enableButtons();
+        updateScore();
+    }
+
+    function checkAnswer(userAnswer) {
+        disableButtons();
+        
+        const currentStatement = statements[currentStatementIndex];
+        const isCorrect = userAnswer === currentStatement.isTrue;
+
+        if (isCorrect) {
+            score++;
+            updateScore();
+            currentStatementElement.parentElement.style.backgroundColor = 'var(--color-success)'; 
+            showBravo();
+        } else {
+            currentStatementElement.parentElement.style.backgroundColor = 'var(--color-error)'; 
+        }
+
+        const correctLabel = currentStatement.isTrue ? "Verdadeiro (V)" : "Falso (F)";
+        
+        // Mostrar feedback/racional
+        rationaleText.innerHTML = `<div class="rationale"><strong>Resposta Correta: ${correctLabel}.</strong><br>${currentStatement.rationale}</div>`;
+        feedbackArea.classList.remove('hidden');
+    }
+
+    function showBravo() {
+        bravoPopup.classList.remove('hidden');
+        setTimeout(() => {
+            bravoPopup.classList.add('hidden');
+        }, 1500);
+    }
+
+    function nextStatement() {
+        currentStatementIndex++;
+        if (currentStatementIndex < statements.length) {
+            showStatement();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        stopTimer();
+        gameScreen.classList.add('hidden');
+        resultScreen.classList.remove('hidden');
+
+        const finalTime = Math.floor((Date.now() - startTime) / 1000);
+        
+        document.getElementById('final-score').textContent = `Acertaste ${score} de ${statements.length} afirmações.`;
+        document.getElementById('final-time').textContent = `O teu tempo total foi de ${finalTime} segundos.`;
+    }
+</script>
+
+</body>
+</html>
