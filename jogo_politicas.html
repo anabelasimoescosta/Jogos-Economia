@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Políticas Económicas e Sociais do Estado</title>
+    <style>
+        :root {
+            --color-primary: #4A90E2; /* Azul vibrante */
+            --color-secondary: #50E3C2; /* Verde água */
+            --color-accent: #F5A623; /* Laranja */
+            --color-text: #333;
+            --color-bg: #f4f4f9;
+            --color-correct: #7ED321; /* Verde */
+            --color-wrong: #D0021B; /* Vermelho */
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .quiz-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            color: var(--color-primary);
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--color-secondary);
+            padding-bottom: 10px;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: var(--color-text);
+        }
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e6f0ff; /* Lightest blue */
+            border-radius: 8px;
+            border-left: 5px solid var(--color-primary);
+        }
+        .answer-option {
+            background-color: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid var(--color-secondary);
+            font-size: 1em;
+            font-weight: 500;
+        }
+        .answer-option:hover {
+            background-color: var(--color-secondary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        /* Corrigir classes de feedback */
+        .answer-option.correct {
+            background-color: var(--color-correct);
+            color: white;
+            border-color: var(--color-correct);
+            pointer-events: none;
+        }
+        .answer-option.wrong {
+            background-color: var(--color-wrong);
+            color: white;
+            border-color: var(--color-wrong);
+            pointer-events: none;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        #next-btn {
+            background-color: var(--color-secondary);
+            color: var(--color-text);
+            display: none;
+            width: 100%;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        #feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
+        #feedback.correct-fb {
+            background-color: rgba(126, 211, 33, 0.2);
+            color: var(--color-correct);
+            font-size: 1.5em;
+        }
+        #feedback.wrong-fb {
+            background-color: rgba(208, 2, 27, 0.2);
+            color: var(--color-wrong);
+        }
+        /* Racional removido do jogo, mas mantido no CSS para evitar erros */
+        .rationale {
+            display: none;
+        }
+        .final-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .final-screen h2 {
+            color: var(--color-primary);
+            font-size: 2em;
+        }
+        .final-screen p {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        #timer {
+            color: var(--color-wrong);
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            .quiz-container {
+                padding: 15px;
+                margin: 10px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .question-text {
+                font-size: 1.1em;
+            }
+            .btn {
+                width: 100%;
+                padding: 12px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="start-screen">
+        <h1>Quiz: Políticas do Estado</h1>
+        <p>Prepara-te para responder a 11 perguntas sobre as Políticas Sociais e Económicas do Estado.</p>
+        <p>O teu objetivo é acertar o maior número de questões no menor tempo possível.</p>
+        <p><strong>A cada resposta correta, verás uma mensagem de incentivo!</strong></p>
+        <button id="start-btn" class="btn" style="background-color: var(--color-primary); color: white; width: 100%; margin-top: 20px;">COMEÇAR O JOGO</button>
+    </div>
+
+    <div id="quiz-screen" style="display: none;">
+        <h1>Quiz: Políticas do Estado</h1>
+        <div class="status-bar">
+            <span id="current-question">Pergunta 1/11</span>
+            <span id="score">Pontuação: 0</span>
+            <span id="timer">Tempo: 00:00</span>
+        </div>
+
+        <div class="question-text" id="question-text"></div>
+        <div id="options-container"></div>
+        
+        <div id="feedback"></div>
+        <div class="rationale" id="rationale-text"></div>
+        
+        <div class="controls">
+            <button id="next-btn" class="btn">PRÓXIMA PERGUNTA</button>
+        </div>
+    </div>
+
+    <div id="final-screen" class="final-screen" style="display: none;">
+        <h2>FIM DO JOGO!</h2>
+        <p>Pontuação Final: <strong id="final-score"></strong></p>
+        <p>Tempo Total: <strong id="final-time"></strong></p>
+        <p id="final-message"></p>
+        <button id="restart-btn" class="btn" style="background-color: var(--color-primary); color: white; margin-top: 20px;">JOGAR NOVAMENTE</button>
+    </div>
+</div>
+
+<script>
+    const originalQuestions = [
+        {
+            "questionNumber": 1,
+            "question": "Qual dos seguintes é um exemplo de instrumento que o Estado pode utilizar nas suas políticas?",
+            "answerOptions": [
+                {
+                    "text": "Aumento da taxa de imposto sobre bens como o tabaco.",
+                    "rationale": "O texto menciona que o Estado pode utilizar os impostos como instrumento, fazendo incidir uma maior taxa sobre determinados bens ou famílias.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "Redução dos salários no setor privado.",
+                    "rationale": "A redução de salários no setor privado não é o exemplo de instrumento de política económica/social estatal focado no texto.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Compra de ações em bolsa.",
+                    "rationale": "Esta ação, embora possível, não é o exemplo principal de intervenção utilizado no texto como instrumento de política social ou económica.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Concessão de créditos bancários.",
+                    "rationale": "A concessão de crédito é, primariamente, uma função de bancos comerciais, embora o Estado possa influenciar.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "Pense no exemplo que o texto utiliza para ilustrar como o Estado arrecada receita para financiar as suas ações."
+        },
+        {
+            "questionNumber": 2,
+            "question": "O objetivo primordial das políticas sociais do Estado é promover:",
+            "answerOptions": [
+                {
+                    "text": "O crescimento económico sustentado.",
+                    "rationale": "Este é um objetivo das políticas económicas e não o principal das políticas sociais.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "A redução das desigualdades sociais e a coesão social.",
+                    "rationale": "O texto afirma diretamente que, através das políticas sociais, o Estado promove a redução das desigualdades sociais, a equidade, a justiça e a coesão social.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "A gestão eficiente dos recursos públicos.",
+                    "rationale": "Este é um objetivo da política orçamental, não o foco principal das políticas sociais.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "A estabilidade da moeda única (Euro).",
+                    "rationale": "Este é um objetivo da União Europeia e da política monetária do BCE.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "As políticas sociais visam corrigir as assimetrias que surgem na sociedade."
+        },
+        {
+            "questionNumber": 3,
+            "question": "A aplicação de impostos diretos progressivos é um instrumento da política de redistribuição de rendimentos, visando que famílias com maiores rendimentos paguem uma parcela mais elevada. Esta afirmação é:",
+            "answerOptions": [
+                {
+                    "text": "Verdadeira.",
+                    "rationale": "O texto descreve explicitamente que a aplicação de impostos diretos progressivos é um instrumento da política de redistribuição para minimizar as desigualdades.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "Falsa.",
+                    "rationale": "A política de redistribuição recorre a diversos instrumentos, sendo a aplicação de impostos diretos progressivos um deles.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "Considere o conceito de progressividade fiscal e o seu impacto na equidade social."
+        },
+        {
+            "questionNumber": 4,
+            "question": "Qual dos seguintes exemplos é uma \"transferência social\" para as famílias mais desfavorecidas?",
+            "answerOptions": [
+                {
+                    "text": "Os salários e lucros.",
+                    "rationale": "Estes são classificados como rendimentos primários, provenientes do mercado e do património.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "O Imposto sobre o Rendimento de Pessoas Singulares (IRS).",
+                    "rationale": "O IRS é um imposto (receita do Estado), não uma transferência social (despesa do Estado para famílias).",
+                    "isCorrect": false
+                },
+                {
+                    "text": "O Rendimento Social de Inserção (RSI).",
+                    "rationale": "O texto menciona o RSI e o Complemento Solidário para Idosos (CSI) como exemplos de transferências sociais.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "A rede de caminhos de ferro.",
+                    "rationale": "Este é um exemplo de bem público, não uma transferência direta de rendimento.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "Procure na secção de instrumentos da política de redistribuição por apoios diretos em dinheiro."
+        },
+        {
+            "questionNumber": 5,
+            "question": "A principal característica que define os \"bens públicos\" é o facto de serem:",
+            "answerOptions": [
+                {
+                    "text": "Produzidos exclusivamente pelo setor privado.",
+                    "rationale": "O texto refere que são produzidos pelo Estado para satisfazer necessidades coletivas.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Bens e serviços coletivos indivisíveis que satisfazem necessidades coletivas.",
+                    "rationale": "Esta é a definição de bem público fornecida na secção de conceitos no final do texto.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "Fontes de rendimentos primários, como juros e rendas.",
+                    "rationale": "Estes são exemplos de rendimentos primários, não bens públicos.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Bens que geram uma maior taxa de imposto.",
+                    "rationale": "Embora possam ser financiados por impostos, esta não é a sua característica definidora.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "Pense no que significa um bem estar 'posto à disposição de todos os cidadãos'."
+        },
+        {
+            "questionNumber": 6,
+            "question": "Qual é o objetivo principal do Estado ao desenvolver uma política fiscal restritiva (aumentando impostos)?",
+            "answerOptions": [
+                {
+                    "text": "Promover o crescimento económico.",
+                    "rationale": "O crescimento económico é o objetivo da política fiscal expansionista (redução de impostos).",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Diminuir o défice orçamental.",
+                    "rationale": "Ao aumentar os impostos, o Estado arrecada maior receita, visando a redução do défice orçamental.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "Dinamizar o consumo e o investimento.",
+                    "rationale": "O aumento de impostos diminui o rendimento disponível, desincentivando o consumo e o investimento.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Aumentar o rendimento disponível das famílias.",
+                    "rationale": "O aumento de impostos, numa política restritiva, diminui o rendimento disponível.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "A política fiscal restritiva visa resolver um problema nas contas públicas."
+        },
+        // Q7, Q9, Q11 foram removidas na iteração anterior.
+        {
+            "questionNumber": 8,
+            "question": "As políticas orçamentais são também denominadas políticas de contraciclo. Qual é a finalidade principal destas políticas?", // Texto alterado
+            "answerOptions": [
+                {
+                    "text": "Aumentar a dívida pública acima de 60% do PIB.",
+                    "rationale": "Isto contraria as regras do Pacto de Estabilidade e Crescimento (PEC).",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Promover a estabilidade da moeda única (Euro).",
+                    "rationale": "Esta é a função principal da política monetária do BCE na UEM.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Corrigir desequilíbrios do ciclo económico, minimizando as flutuações.",
+                    "rationale": "O texto explica que as políticas orçamentais têm a finalidade de corrigir desequilíbrios do ciclo económico, sendo por isso chamadas 'de contraciclo'.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "Fazer incidir sobre as famílias com rendimentos mais elevados uma maior taxa de IRS.",
+                    "rationale": "Este é um instrumento da política fiscal progressiva.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "O termo 'contraciclo' sugere uma ação oposta ao movimento da economia."
+        },
+        {
+            "questionNumber": 10,
+            "question": "Uma política fiscal expansionista é desenvolvida para promover o crescimento económico e, para isso, o Estado:",
+            "answerOptions": [
+                {
+                    "text": "Aumenta as transferências sociais (RSI, CSI).",
+                    "rationale": "Embora ajude o consumo, é primariamente um instrumento da política social, não a definição da ação fiscal expansionista.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Reduz os impostos, aumentando o rendimento disponível das famílias e os lucros das empresas.",
+                    "rationale": "O texto descreve que o Estado reduz os impostos para dinamizar o consumo e o investimento, caracterizando a política fiscal expansionista.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "Aumenta o défice orçamental para 60% do PIB.",
+                    "rationale": "60% do PIB é o limite máximo da dívida pública, não um objetivo de aumento do défice.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Fixa a taxa de inflação a médio prazo em 2%.",
+                    "rationale": "Este é um critério de convergência para a UEM, não uma ação da política fiscal expansionista.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "O objetivo de aumentar o crescimento é conseguido ao dar mais poder de compra aos agentes económicos."
+        },
+        {
+            "questionNumber": 12,
+            "question": "Uma 'falha de mercado' é uma justificação para a intervenção do Estado e decorre de:",
+            "answerOptions": [
+                {
+                    "text": "O Estado ultrapassar o limite de 3% do PIB para o défice.",
+                    "rationale": "Esta é uma infração das regras do Pacto de Estabilidade e Crescimento.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "A ineficiência dos mercados.",
+                    "rationale": "O texto, na secção de conceitos, define que uma falha de mercado decorre da ineficiência dos mercados.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "A distribuição dos rendimentos primários.",
+                    "rationale": "Isto é um resultado do mercado, que a política social procura corrigir, mas não é a 'falha de mercado' em si.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "As políticas orçamentais serem de contraciclo.",
+                    "rationale": "Isto é uma ação do Estado para corrigir desequilíbrios, não a causa da falha.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "Esta falha é uma das razões fundamentais para a existência de um Estado intervencionista."
+        },
+        {
+            "questionNumber": 13,
+            "question": "Desde que Portugal se tornou membro da União Económica e Monetária (UEM) com o Euro, a responsabilidade pela política monetária é do/a:",
+            "answerOptions": [
+                {
+                    "text": "Banco de Portugal.",
+                    "rationale": "Os bancos centrais nacionais não têm mais a responsabilidade pela política monetária na UEM.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Governo Português.",
+                    "rationale": "O Governo Português é responsável pela política orçamental, sujeita a regras europeias.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Banco Central Europeu (BCE).",
+                    "rationale": "O texto indica que a política monetária é comum e da responsabilidade do BCE.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "Pacto de Estabilidade e Crescimento (PEC).",
+                    "rationale": "O PEC define as regras fiscais, não a responsabilidade pela política monetária.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "É a instituição central do sistema do Euro."
+        },
+        {
+            "questionNumber": 14,
+            "question": "De acordo com o Pacto de Estabilidade e Crescimento (PEC), a dívida pública dos Estados-membros da UEM não poderá ser superior a:",
+            "answerOptions": [
+                {
+                    "text": "2% da taxa de inflação a médio prazo.",
+                    "rationale": "2% é a meta da taxa de inflação, um dos critérios de convergência.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "3% do PIB.",
+                    "rationale": "3% é o limite para o défice orçamental.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "60% do PIB.",
+                    "rationale": "O texto refere que a dívida pública não poderá ser superior a 60% do PIB.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "100% do PIB.",
+                    "rationale": "Este valor é superior ao limite estabelecido pelo PEC.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "Lembre-se dos dois limites percentuais impostos pelo PEC."
+        },
+        {
+            "questionNumber": 15,
+            "question": "O Orçamento do Estado é um documento essencial que tem como função principal:",
+            "answerOptions": [
+                {
+                    "text": "Determinar a taxa de juro do Euro.",
+                    "rationale": "A taxa de juro do Euro é determinada pelo Banco Central Europeu (BCE).",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Prever as despesas e receitas do Estado para um determinado período de tempo, geralmente um ano.",
+                    "rationale": "O texto define o Orçamento do Estado como o documento onde são previstas as despesas e receitas do Estado para um determinado período de tempo.",
+                    "isCorrect": true
+                },
+                {
+                    "text": "Definir os critérios de convergência nominal.",
+                    "rationale": "Os critérios de convergência foram definidos no Tratado da União Europeia (Maastricht) em 1992.",
+                    "isCorrect": false
+                },
+                {
+                    "text": "Fazer a contagem do número de desempregados no país.",
+                    "rationale": "A contagem de desempregados é função de outras entidades, como o Instituto Nacional de Estatística.",
+                    "isCorrect": false
+                }
+            ],
+            "hint": "O Orçamento é o planeamento financeiro anual do Estado."
+        }
+    ];
+
+    // Filtra questões (remove 1, 7, 9, 11)
+    const quizData = {
+        "questions": originalQuestions.filter(q => 
+            q.questionNumber !== 1 && 
+            q.questionNumber !== 7 && 
+            q.questionNumber !== 9 && 
+            q.questionNumber !== 11
+        )
+    };
+
+    const TOTAL_QUESTIONS = quizData.questions.length; // 11
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let startTime;
+    let timerInterval;
+    let quizActive = false;
+    let answerLocked = false;
+
+    const startScreen = document.getElementById('start-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const finalScreen = document.getElementById('final-screen');
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const currentQuestionSpan = document.getElementById('current-question');
+    const scoreSpan = document.getElementById('score');
+    const timerSpan = document.getElementById('timer');
+    const nextBtn = document.getElementById('next-btn');
+    const feedbackDiv = document.getElementById('feedback');
+    // Rationale text element still exists in HTML but its use is disabled
+    const finalScore = document.getElementById('final-score');
+    const finalTime = document.getElementById('final-time');
+    const finalMessage = document.getElementById('final-message');
+
+    // --- FUNÇÕES DE CONTROLO DO JOGO ---
+
+    function startTimer() {
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
+
+    function updateTimer() {
+        if (!quizActive) return;
+        const elapsedTime = Date.now() - startTime;
+        const totalSeconds = Math.floor(elapsedTime / 1000);
+        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        timerSpan.textContent = `Tempo: ${minutes}:${seconds}`;
+    }
+
+    function formatTime(ms) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        return `${minutes} minutos e ${seconds} segundos`;
+    }
+
+    function startGame() {
+        currentQuestionIndex = 0;
+        score = 0;
+        quizActive = true;
+        answerLocked = false;
+        startScreen.style.display = 'none';
+        finalScreen.style.display = 'none';
+        quizScreen.style.display = 'block';
+        scoreSpan.textContent = `Pontuação: 0`;
+        startTimer();
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (currentQuestionIndex >= TOTAL_QUESTIONS) {
+            endGame();
+            return;
+        }
+
+        const q = quizData.questions[currentQuestionIndex];
+        
+        // Reset controls and feedback
+        nextBtn.style.display = 'none';
+        feedbackDiv.style.display = 'none';
+        answerLocked = false;
+        
+        currentQuestionSpan.textContent = `Pergunta ${currentQuestionIndex + 1}/${TOTAL_QUESTIONS}`;
+        questionText.innerHTML = `${q.question}`;
+        optionsContainer.innerHTML = '';
+
+        q.answerOptions.forEach((option, index) => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'answer-option';
+            optionDiv.textContent = option.text;
+            optionDiv.dataset.index = index;
+            optionDiv.addEventListener('click', checkAnswer);
+            optionsContainer.appendChild(optionDiv);
+        });
+    }
+
+    function checkAnswer(event) {
+        if (answerLocked) return;
+        answerLocked = true; // Block further clicks until next question
+
+        const q = quizData.questions[currentQuestionIndex];
+        const selectedOption = event.target;
+        const selectedIndex = parseInt(selectedOption.dataset.index);
+        const correctIndex = q.answerOptions.findIndex(opt => opt.isCorrect);
+
+        feedbackDiv.style.display = 'block';
+        
+        // **DETALHES REMOVIDOS:** Racional e Pista não são exibidos
+
+        // Colorir opções
+        document.querySelectorAll('.answer-option').forEach((opt, index) => {
+            opt.removeEventListener('click', checkAnswer); // Disable clicks
+            if (index === correctIndex) {
+                opt.classList.add('correct');
+            } else if (index === selectedIndex) {
+                opt.classList.add('wrong');
+            }
+        });
+
+        if (selectedIndex === correctIndex) {
+            score++;
+            const encouragements = ["PARABÉNS!", "ÉS SENSACIONAL!", "EXCELENTE!", "MUITO BEM!"];
+            const randomIndex = Math.floor(Math.random() * encouragements.length);
+            feedbackDiv.className = 'correct-fb';
+            feedbackDiv.textContent = encouragements[randomIndex];
+        } else {
+            feedbackDiv.className = 'wrong-fb';
+            feedbackDiv.textContent = "Incorreto.";
+        }
+        
+        scoreSpan.textContent = `Pontuação: ${score}`;
+        nextBtn.style.display = 'inline-block';
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        loadQuestion();
+    }
+
+    function endGame() {
+        stopTimer();
+        quizActive = false;
+        quizScreen.style.display = 'none';
+        finalScreen.style.display = 'block';
+
+        const elapsedTime = Date.now() - startTime;
+        const formattedTime = formatTime(elapsedTime);
+        
+        finalScore.textContent = `${score} / ${TOTAL_QUESTIONS}`;
+        finalTime.textContent = formattedTime;
+
+        if (score === TOTAL_QUESTIONS) {
+            finalMessage.innerHTML = '<h2>RESULTADO ESPETACULAR!</h2><p>Acertaste todas as perguntas no tempo recorde. Tens um domínio sensacional do conteúdo!</p>';
+        } else if (score >= TOTAL_QUESTIONS / 2) {
+            finalMessage.innerHTML = '<h2>BOM DESEMPENHO!</h2><p>Conheces bem a matéria. Continua a praticar para alcançares a perfeição.</p>';
+        } else {
+            finalMessage.innerHTML = '<h2>VAMOS MELHORAR!</h2><p>O teu resultado mostra que precisas de rever alguns conceitos. Não desanimes e tenta novamente!</p>';
+        }
+    }
+
+    // --- EVENT LISTENERS ---
+    startBtn.addEventListener('click', startGame);
+    restartBtn.addEventListener('click', startGame);
+    nextBtn.addEventListener('click', nextQuestion);
+
+    // Initial message
+    document.addEventListener('DOMContentLoaded', () => {
+        timerSpan.textContent = 'Tempo: 00:00';
+        currentQuestionSpan.textContent = `Pergunta 1/${TOTAL_QUESTIONS}`;
+    });
+</script>
+
+</body>
+</html>
