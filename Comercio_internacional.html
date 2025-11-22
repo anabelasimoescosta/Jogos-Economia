@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Comércio Internacional</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Configuração de Fonte Global */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        :root {
+            font-family: 'Inter', sans-serif;
+        }
+        .bg-color-main { background-color: #2F3645; }
+        .text-color-correct { color: #10B981; } /* Emerald Green */
+        .text-color-wrong { color: #EF4444; } /* Red */
+        .btn-true { background-color: #3B82F6; } /* Blue */
+        .btn-false { background-color: #F97316; } /* Orange */
+        .btn-hover:hover { opacity: 0.9; transform: scale(1.02); }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div id="quiz-container" class="bg-white shadow-2xl rounded-xl w-full max-w-lg p-6 md:p-10 transform transition-all duration-500">
+        
+        <!-- Header e Contador de Pontuação/Tempo -->
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <h1 class="text-3xl font-extrabold text-color-main tracking-tight">
+                Quiz: Trocas Internacionais
+            </h1>
+            <div id="score-display" class="text-xl font-bold text-gray-700">
+                Pontuação: 0
+            </div>
+        </div>
+
+        <!-- Ecrã Inicial / Pergunta / Resultado Final -->
+        <div id="start-screen">
+            <p class="text-lg text-gray-600 mb-6">Teste os seus conhecimentos sobre a necessidade, diversidade e vantagens das trocas internacionais!</p>
+            <p class="text-sm font-semibold text-gray-500 mb-8">Responda a 10 perguntas de Verdadeiro ou Falso. O tempo será cronometrado!</p>
+            <button onclick="startGame()" class="w-full py-4 text-xl font-bold text-white bg-green-500 rounded-lg shadow-lg hover:bg-green-600 transition duration-300 transform hover:scale-105">
+                INICIAR O QUIZ
+            </button>
+        </div>
+
+        <!-- Ecrã de Pergunta -->
+        <div id="question-screen" class="hidden">
+            <div class="text-center mb-6">
+                <span id="question-number" class="text-sm font-semibold text-white bg-indigo-500 px-4 py-1 rounded-full shadow-md">
+                    Pergunta 1 / 10
+                </span>
+            </div>
+            <p id="question-text" class="text-xl md:text-2xl font-semibold text-color-main mb-8 text-center min-h-[100px] flex items-center justify-center">
+                <!-- Texto da Pergunta é inserido aqui -->
+            </p>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button id="btn-true" class="btn-true text-white py-4 text-2xl font-bold rounded-xl shadow-lg btn-hover transition duration-200" data-answer="Verdadeiro">VERDADEIRO</button>
+                <button id="btn-false" class="btn-false text-white py-4 text-2xl font-bold rounded-xl shadow-lg btn-hover transition duration-200" data-answer="Falso">FALSO</button>
+            </div>
+        </div>
+
+        <!-- Caixa de Feedback (Resposta Certa/Errada) -->
+        <div id="feedback-box" class="hidden mt-8 p-4 rounded-xl text-center shadow-inner">
+            <p id="feedback-message" class="text-2xl font-extrabold"></p>
+            <button onclick="nextQuestion()" class="mt-4 px-6 py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition duration-200">
+                Próxima Pergunta
+            </button>
+        </div>
+
+        <!-- Ecrã de Resultados Finais -->
+        <div id="results-screen" class="hidden text-center">
+            <h2 class="text-4xl font-extrabold text-green-700 mb-4">QUIZ CONCLUÍDO!</h2>
+            <p class="text-2xl font-bold text-color-main mb-2">A sua pontuação final é:</p>
+            <p id="final-score" class="text-6xl font-black text-blue-600 mb-6">0/10</p>
+            <p class="text-xl font-bold text-gray-700 mb-2">Tempo total gasto:</p>
+            <p id="final-time" class="text-4xl font-black text-orange-500 mb-8">0s</p>
+            <button onclick="window.location.reload()" class="w-full py-4 text-xl font-bold text-white bg-red-500 rounded-lg shadow-lg hover:bg-red-600 transition duration-300 transform hover:scale-105">
+                JOGAR NOVAMENTE
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Variáveis Globais
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let startTime = 0;
+        let questionsAnswered = 0;
+
+        // Estrutura das perguntas (Verdadeiro/Falso) - Agora com 10 questões
+        const quizQuestions = [
+            {
+                text: "A necessidade das trocas internacionais existe apenas quando um país não tem os recursos para produzir um bem.",
+                answer: "Falso" // Porque pode ter recursos, mas ser ineficiente ou ter escassez de capital
+            },
+            {
+                text: "Se um país produzir um bem a um custo superior ao de outros países (ineficiência), deverá procurá-lo junto dos países mais eficientes.",
+                answer: "Verdadeiro" // Está no texto: "deverá procurar esses bens e serviços junto dos países que os produzam... com menores custos (maior eficiência)"
+            },
+            {
+                text: "A diversidade das trocas internacionais inclui apenas bens tangíveis, excluindo serviços ou capitais.",
+                answer: "Falso" // Está no texto: "trocas de bens, serviços e capitais."
+            },
+            {
+                text: "O Comércio Extracomunitário abrange as transações de mercadorias entre Portugal e qualquer outro Estado-Membro da UE.",
+                answer: "Falso" // Isso é Comércio Intracomunitário. Extracomunitário é com "países terceiros".
+            },
+            {
+                text: "A especialização na produção deve ocorrer nas atividades em que o país possui maiores vantagens, como usar mão-de-obra abundante se esta for a sua maior vantagem.",
+                answer: "Verdadeiro" // Está no texto: "cada país deverá especializar a sua produção nas atividades produtivas em que possui maiores vantagens"
+            },
+            {
+                text: "A participação no comércio internacional tem como base a divisão internacional do trabalho e a especialização.",
+                answer: "Verdadeiro" // Está no texto: "A participação no comércio internacional, com base na divisão internacional do trabalho e na especialização"
+            },
+            {
+                text: "O Comércio Interno é o que diz respeito à expedição de mercadorias transacionadas entre Portugal e os restantes Estados-Membros da EU.",
+                answer: "Falso" // Isso é Comércio Intracomunitário. Comércio Interno é "dentro do território nacional por agentes residentes nesse país".
+            },
+            {
+                text: "Atualmente, devido ao fenómeno da globalização, é impossível um país viver economicamente isolado.",
+                answer: "Verdadeiro" // Está no texto: "nos nossos dias, dado o fenómeno da globalização, é impossível um país viver economicamente isolado."
+            },
+            {
+                text: "A troca de bens, serviços e capitais tornou-se uma prática constante e indispensável à satisfação das necessidades das populações no contexto da globalização.",
+                answer: "Verdadeiro" // Nova questão: Baseado em: "trocar bens, serviços e capitais tornou-se uma prática constante e indispensável à satisfação das necessidades das populações."
+            },
+            {
+                text: "Um dos aspetos positivos da Globalização é a rápida difusão do progresso tecnológico.",
+                answer: "Verdadeiro" // Listado em "Aspetos positivos da Globalização"
+            },
+        ];
+
+        // Elementos do DOM
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const feedbackBox = document.getElementById('feedback-box');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const scoreDisplay = document.getElementById('score-display');
+        const questionNumberDisplay = document.getElementById('question-number');
+        const questionText = document.getElementById('question-text');
+        const btnTrue = document.getElementById('btn-true');
+        const btnFalse = document.getElementById('btn-false');
+
+        // Adicionar Listeners de Eventos
+        btnTrue.addEventListener('click', () => checkAnswer('Verdadeiro'));
+        btnFalse.addEventListener('click', () => checkAnswer('Falso'));
+
+        /**
+         * Inicia o jogo, esconde o ecrã inicial e começa o cronómetro.
+         */
+        function startGame() {
+            startScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            startTime = Date.now(); // Inicia o cronómetro
+            loadQuestion();
+        }
+
+        /**
+         * Carrega a próxima pergunta no ecrã.
+         */
+        function loadQuestion() {
+            if (currentQuestionIndex < quizQuestions.length) {
+                const q = quizQuestions[currentQuestionIndex];
+                
+                // Reset UI
+                feedbackBox.classList.add('hidden');
+                questionScreen.classList.remove('hidden');
+                btnTrue.disabled = false;
+                btnFalse.disabled = false;
+                btnTrue.classList.remove('opacity-50');
+                btnFalse.classList.remove('opacity-50');
+                
+                // Update text
+                questionNumberDisplay.textContent = `Pergunta ${currentQuestionIndex + 1} / ${quizQuestions.length}`;
+                questionText.textContent = q.text;
+            } else {
+                endGame();
+            }
+        }
+
+        /**
+         * Verifica a resposta do utilizador e dá feedback.
+         * @param {string} selectedAnswer - A resposta escolhida pelo utilizador ('Verdadeiro' ou 'Falso').
+         */
+        function checkAnswer(selectedAnswer) {
+            questionsAnswered++;
+            const correctAnswer = quizQuestions[currentQuestionIndex].answer;
+            const isCorrect = selectedAnswer === correctAnswer;
+
+            // Desativar botões para evitar cliques duplicados
+            btnTrue.disabled = true;
+            btnFalse.disabled = true;
+
+            // Determinar feedback e estilo
+            if (isCorrect) {
+                score++;
+                feedbackMessage.textContent = "CORRETO! ÉS O MAIOR!!!!";
+                feedbackBox.className = 'mt-8 p-4 rounded-xl text-center shadow-inner bg-emerald-100 border-emerald-500 border-2';
+                feedbackMessage.classList.remove('text-color-wrong');
+                feedbackMessage.classList.add('text-color-correct');
+            } else {
+                feedbackMessage.textContent = `ERRADO. ESTUDA…. Para seres o MAIOR. (A resposta correta era: ${correctAnswer})`;
+                feedbackBox.className = 'mt-8 p-4 rounded-xl text-center shadow-inner bg-red-100 border-red-500 border-2';
+                feedbackMessage.classList.remove('text-color-correct');
+                feedbackMessage.classList.add('text-color-wrong');
+            }
+
+            // Atualizar UI
+            scoreDisplay.textContent = `Pontuação: ${score}`;
+            questionScreen.classList.add('hidden');
+            feedbackBox.classList.remove('hidden');
+        }
+
+        /**
+         * Avança para a próxima pergunta.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        /**
+         * Termina o jogo e mostra os resultados finais.
+         */
+        function endGame() {
+            const endTime = Date.now();
+            const totalTimeSeconds = ((endTime - startTime) / 1000).toFixed(2);
+
+            questionScreen.classList.add('hidden');
+            feedbackBox.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            
+            document.getElementById('final-score').textContent = `${score} / ${quizQuestions.length}`;
+            document.getElementById('final-time').textContent = `${totalTimeSeconds} segundos`;
+
+            // Mensagem de Motivação Final
+            const finalMessage = document.getElementById('final-score-message');
+            if (finalMessage) finalMessage.remove(); // Remove previous message if exists
+
+            const msg = document.createElement('p');
+            msg.id = 'final-score-message';
+            msg.className = 'text-xl font-semibold mb-4';
+            
+            if (score === quizQuestions.length) {
+                msg.textContent = "PARABÉNS! Resposta perfeita! ÉS GIGANTE!!!!";
+                msg.classList.add('text-green-600');
+            } else if (score >= 7) {
+                msg.textContent = "Excelente trabalho! Conseguiste um ótimo resultado!";
+                msg.classList.add('text-blue-600');
+            } else {
+                msg.textContent = "Não desanime! Reveja o conteúdo e tente novamente para seres O MAIOR!";
+                msg.classList.add('text-orange-600');
+            }
+            resultsScreen.insertBefore(msg, document.getElementById('final-score').nextSibling);
+        }
+
+        // Mostrar Pontuação Inicial
+        scoreDisplay.textContent = `Pontuação: 0`;
+        
+    </script>
+</body>
+</html>
