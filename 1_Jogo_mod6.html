@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Economia: Políticas Comerciais</title>
+    <style>
+        :root {
+            --primary: #0984e3;
+            --secondary: #74b9ff;
+            --accent: #e17055;
+            --correct: #00b894;
+            --wrong: #d63031;
+            --bg: #dfe6e9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #2d3436;
+        }
+
+        #game-container {
+            background: white;
+            width: 95%;
+            max-width: 750px;
+            padding: 35px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            text-align: center;
+            border: 6px solid var(--primary);
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: var(--primary); font-size: 2.5em; margin-bottom: 10px; }
+        p.intro-text { font-size: 1.3em; color: #636e72; margin-bottom: 30px; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3);
+        }
+
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(9, 132, 227, 0.4); }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .option-btn {
+            background: #ffffff;
+            border: 2px solid #b2bec3;
+            padding: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1.05em;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover:not([disabled]) { 
+            background: #f1f2f6; 
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        #feedback {
+            margin-top: 25px;
+            font-weight: 800;
+            font-size: 1.5em;
+            min-height: 1.6em;
+            text-transform: uppercase;
+        }
+
+        .correct-anim { color: var(--correct); animation: pop 0.4s ease-out; }
+        .wrong-anim { color: var(--wrong); }
+
+        @keyframes pop {
+            0% { transform: scale(0.8); }
+            100% { transform: scale(1.1); }
+        }
+
+        #progress-bar {
+            height: 12px;
+            background: #ecf0f1;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen" class="screen active">
+        <h1 style="color: var(--primary)">📈 Desafio de Economia</h1>
+        <p class="intro-text">Políticas Comerciais e Blocos Económicos</p>
+        <div style="font-size: 6em; margin: 25px;">📊🇪🇺</div>
+        <p style="font-weight: bold; color: #2d3436;">11.º Ano - Ensino Secundário</p>
+        <button class="btn" onclick="startGame()">Iniciar Questionário</button>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div id="progress-bar"><div id="progress-fill"></div></div>
+        <p id="question-number" style="color: var(--primary); font-weight: bold; letter-spacing: 1px;"></p>
+        <h2 id="question-text" style="margin-bottom: 20px;"></h2>
+        <div id="options-container" class="options-grid"></div>
+        <div id="feedback"></div>
+        <button id="next-btn" class="btn" style="display:none; background: var(--accent);" onclick="loadQuestion()">Continuar →</button>
+    </div>
+
+    <div id="end-screen" class="screen">
+        <h1>🏁 Resultados Finais</h1>
+        <p id="final-score" style="font-size: 1.6em; margin: 20px 0;"></p>
+        <div id="medal" style="font-size: 5em; margin: 25px;"></div>
+        <button class="btn" onclick="location.reload()">Tentar Novamente</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            q: "O que caracteriza as Políticas Comerciais de uma nação?",
+            o: ["As regras de convivência social interna", "A forma como o país se relaciona comercialmente com o exterior", "O orçamento anual da segurança social", "A política de defesa militar"],
+            a: 1
+        },
+        {
+            q: "Qual é o foco principal do Livre-Cambismo?",
+            o: ["Aumentar o comércio através da liberalização das trocas", "Impor taxas elevadas a todos os produtos estrangeiros", "Substituir todas as importações por produção nacional", "Fechar as fronteiras ao investimento estrangeiro"],
+            a: 0
+        },
+        {
+            q: "A imposição de limites máximos à quantidade ou valor de bens importados designa-se:",
+            o: ["Tarifa", "Contingentação", "Livre Circulação", "Direito Aduaneiro"],
+            a: 1
+        },
+        {
+            q: "Um 'Embargo Comercial' é considerado uma forma extrema de protecionismo porque:",
+            o: ["Aumenta os preços em 50%", "Proíbe a entrada de certos bens ou trocas com certas regiões", "Apenas taxa produtos de luxo", "Reduz o IVA das exportações"],
+            a: 1
+        },
+        {
+            q: "Barreiras que exigem o cumprimento de normas técnicas específicas para produtos importados são:",
+            o: ["Barreiras Tarifárias", "Contingentação", "Barreiras Técnicas e Normativas", "Subsídios à Exportação"],
+            a: 2
+        },
+        {
+            q: "Como se distingue o Protecionismo do Livre-Cambismo?",
+            o: ["O Protecionismo recusa qualquer tipo de comércio internacional", "O Livre-Cambismo protege a produção nacional menos competitiva", "O Protecionismo advoga a proteção da produção nacional por ser menos competitiva", "São conceitos idênticos na prática"],
+            a: 2
+        },
+        {
+            q: "Indica a ordem correta (crescente) dos graus de integração económica:",
+            o: ["União Política > União Aduaneira > Mercado Comum", "Zona Comércio Livre > União Aduaneira > Mercado Comum > União Económica", "Mercado Comum > Zona Comércio Livre > União Política", "União Económica > União Aduaneira > Mercado Comum"],
+            a: 1
+        },
+        {
+            q: "O que diferencia a União Aduaneira de uma Zona de Comércio Livre?",
+            o: ["A existência de uma moeda comum", "A adoção de uma pauta exterior comum para terceiros países", "A livre circulação de capitais", "A criação de um parlamento comum"],
+            a: 1
+        },
+        {
+            q: "Qual era a missão central da CECA (1951)?",
+            o: ["Criar um exército europeu único", "Colocar a produção de carvão e aço sob uma autoridade comum", "Estabelecer o Banco Central Europeu", "Liberalizar o setor do turismo"],
+            a: 1
+        },
+        {
+            q: "A criação de um mercado comum de matérias-primas industriais foi o objetivo da:",
+            o: ["ONU", "CECA", "EFTA", "OMC"],
+            a: 1
+        },
+        {
+            q: "Quais destes países foram fundadores da CECA e da CEE?",
+            o: ["Portugal, Espanha e Grécia", "França, Alemanha, Itália e Benelux", "Reino Unido, Irlanda e Dinamarca", "Áustria, Finlândia e Suécia"],
+            a: 1
+        },
+        {
+            q: "Qual tratado deu origem à Comunidade Europeia do Carvão e do Aço?",
+            o: ["Tratado de Roma", "Tratado de Paris", "Tratado de Maastricht", "Tratado de Lisboa"],
+            a: 1
+        },
+        {
+            q: "O Tratado de Roma (1957) estabeleceu a:",
+            o: ["CECA", "CEE (Comunidade Económica Europeia)", "Zona Euro", "ONU"],
+            a: 1
+        },
+        {
+            q: "O Tratado de Maastricht é histórico porque:",
+            o: ["Acabou com a Segunda Guerra Mundial", "Criou formalmente a União Europeia", "Assinou a paz entre a França e a Alemanha", "Expulsou o Reino Unido da União"],
+            a: 1
+        },
+        {
+            q: "No 'Mercado Comum', o que circula livremente?",
+            o: ["Apenas o aço e o carvão", "Apenas os governantes", "Mercadorias, pessoas, serviços e capitais", "Apenas a informação digital"],
+            a: 2
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let feedbackToggle = true;
+
+    function startGame() {
+        document.getElementById('start-screen').classList.remove('active');
+        document.getElementById('quiz-screen').classList.add('active');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (currentQuestion >= questions.length) {
+            showEndScreen();
+            return;
+        }
+
+        const q = questions[currentQuestion];
+        document.getElementById('question-number').innerText = `DESAFIO: QUESTÃO ${currentQuestion + 1} DE ${questions.length}`;
+        document.getElementById('question-text').innerText = q.q;
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('next-btn').style.display = "none";
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = "";
+        
+        q.o.forEach((opt, index) => {
+            const button = document.createElement('button');
+            button.className = 'option-btn';
+            button.innerText = opt;
+            button.onclick = () => checkAnswer(index);
+            container.appendChild(button);
+        });
+
+        updateProgress();
+    }
+
+    function checkAnswer(choice) {
+        const correct = questions[currentQuestion].a;
+        const feedbackDiv = document.getElementById('feedback');
+        const buttons = document.querySelectorAll('.option-btn');
+
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (choice === correct) {
+            score++;
+            const msg = feedbackToggle ? "BRAVO, BRAVÍSSIMO! ✨" : "CERTISSÍMO! 💎";
+            feedbackDiv.innerText = msg;
+            feedbackDiv.className = "correct-anim";
+            feedbackToggle = !feedbackToggle;
+            buttons[choice].style.background = "var(--correct)";
+            buttons[choice].style.color = "white";
+            buttons[choice].style.borderColor = "var(--correct)";
+        } else {
+            feedbackDiv.innerText = "Ops! Estuda mais um pouco... 🔍";
+            feedbackDiv.className = "wrong-anim";
+            buttons[choice].style.background = "var(--wrong)";
+            buttons[choice].style.color = "white";
+            buttons[correct].style.border = "3px solid var(--correct)";
+            buttons[correct].style.fontWeight = "bold";
+        }
+
+        currentQuestion++;
+        document.getElementById('next-btn').style.display = "inline-block";
+    }
+
+    function updateProgress() {
+        const percent = (currentQuestion / questions.length) * 100;
+        document.getElementById('progress-fill').style.width = percent + "%";
+    }
+
+    function showEndScreen() {
+        document.getElementById('quiz-screen').classList.remove('active');
+        document.getElementById('end-screen').classList.add('active');
+        
+        const finalScore = (score / questions.length) * 100;
+        document.getElementById('final-score').innerText = `Concluíste com ${score} respostas certas! (${finalScore.toFixed(0)}%)`;
+        
+        let medal = "";
+        if(finalScore === 100) medal = "🏆 Economista de Elite!";
+        else if(finalScore >= 80) medal = "🌟 Excelente Desempenho!";
+        else if(finalScore >= 50) medal = "📈 Aproveitamento Positivo!";
+        else medal = "📖 Hora de rever a matéria!";
+        
+        document.getElementById('medal').innerText = medal;
+    }
+</script>
+
+</body>
+</html>
