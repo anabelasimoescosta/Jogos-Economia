@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grande Jogo das Trocas Internacionais</title>
+    <style>
+        :root {
+            --primary: #ff4757;
+            --secondary: #2ed573;
+            --accent: #1e90ff;
+            --bg: #f1f2f6;
+            --text: #2f3542;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 { color: var(--primary); margin-bottom: 10px; }
+        
+        #stats {
+            display: flex;
+            justify-content: space-around;
+            background: #eee;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        #question-text {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2c3e50;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: var(--bg);
+            border: 2px solid #ddd;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            background: #e0e0e0;
+        }
+
+        .correct { background-color: var(--secondary) !important; color: white; border-color: #1aae5e; }
+        .wrong { background-color: var(--primary) !important; color: white; border-color: #d63031; }
+
+        #feedback {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 20px;
+            height: 40px;
+            text-transform: uppercase;
+        }
+
+        #result-screen { display: none; }
+        #start-screen { display: block; }
+        #quiz-screen { display: none; }
+
+        .start-btn {
+            background: var(--accent);
+            color: white;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(30, 144, 255, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(30, 144, 255, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(30, 144, 255, 0); }
+        }
+
+        .timer-red { color: red; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen">
+        <h1>DESAFIO DE ECONOMIA</h1>
+        <p>Trocas Internacionais e Balança de Pagamentos</p>
+        <p style="color: #666;">Responde a 20 perguntas o mais rápido possível!</p>
+        <button class="start-btn" onclick="startGame()">COMEÇAR JOGO!</button>
+    </div>
+
+    <div id="quiz-screen">
+        <div id="stats">
+            <div>Pergunta: <span id="q-count">1</span>/20</div>
+            <div>Pontos: <span id="score">0</span></div>
+            <div>Tempo: <span id="timer">0</span>s</div>
+        </div>
+        
+        <div id="question-text">Pergunta aqui?</div>
+        
+        <div class="options-grid" id="options">
+            </div>
+
+        <div id="feedback"></div>
+    </div>
+
+    <div id="result-screen">
+        <h1>FIM DO JOGO!</h1>
+        <div id="final-stats" style="font-size: 1.4rem; margin: 20px 0;"></div>
+        <button class="start-btn" onclick="location.reload()">REPETIR DESAFIO</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            q: "Qual é uma das principais justificações para a existência de trocas internacionais?",
+            o: ["Autossuficiência absoluta dos países", "Desigual distribuição de recursos e dotação de fatores", "Impedir o contacto entre culturas", "Aumento obrigatório dos impostos"],
+            a: 1
+        },
+        {
+            q: "Refere uma vantagem decorrente da integração no comércio internacional.",
+            o: ["Redução da variedade de bens disponíveis", "Aumento dos custos de produção", "Acesso a mercados mais vastos e economias de escala", "Isolamento económico"],
+            a: 2
+        },
+        {
+            q: "Porque é importante efetuar o registo das trocas internacionais?",
+            o: ["Apenas por curiosidade estatística", "Para controlar a vida privada dos cidadãos", "Para analisar a saúde económica e o endividamento externo", "Para proibir as importações"],
+            a: 2
+        },
+        {
+            q: "Quais são as três grandes componentes da Balança de Pagamentos?",
+            o: ["Corrente, Capital e Financeira", "Bens, Serviços e Turismo", "Exportações, Importações e Saldo", "Primária, Secundária e Terciária"],
+            a: 0
+        },
+        {
+            q: "A Balança Corrente divide-se em:",
+            o: ["Bens, Serviços, Capital e Financeira", "Bens, Serviços, Rendimento Primário e Secundário", "Apenas Bens e Serviços", "Exportações e Importações"],
+            a: 1
+        },
+        {
+            q: "Onde se registam os salários e juros pagos ao/pelo exterior?",
+            o: ["Balança de Bens", "Balança de Capital", "Rendimento Primário", "Rendimento Secundário"],
+            a: 2
+        },
+        {
+            q: "As remessas de emigrantes são registadas na balança de:",
+            o: ["Serviços", "Rendimento Secundário", "Rendimento Primário", "Financeira"],
+            a: 1
+        },
+        {
+            q: "Como se calcula o saldo da balança de bens?",
+            o: ["Exportações + Importações", "Exportações - Importações", "Exportações / Importações", "Rendimentos - Despesas"],
+            a: 1
+        },
+        {
+            q: "Se as Exportações forem 1000 e as Importações 800, o saldo é:",
+            o: ["Défice de 200", "Superávite de 200", "Equilíbrio", "Défice de 1800"],
+            a: 1
+        },
+        {
+            q: "Qual é a fórmula da Taxa de Cobertura?",
+            o: ["(Imp / Exp) * 100", "(Exp / Imp) * 100", "Exp - Imp", "Exp + Imp"],
+            a: 1
+        },
+        {
+            q: "Se a Taxa de Cobertura for superior a 100%, significa que:",
+            o: ["As importações são superiores às exportações", "As exportações superam as importações", "O país está em défice comercial", "O saldo da balança é zero"],
+            a: 1
+        },
+        {
+            q: "O saldo da Balança Corrente resulta da:",
+            o: ["Diferença entre a Balança de Capital e Financeira", "Soma dos saldos de Bens, Serviços, Rend. Primário e Secundário", "Apenas da venda de mercadorias", "Soma de todos os impostos do país"],
+            a: 1
+        },
+        {
+            q: "O que inclui a Balança de Capital?",
+            o: ["Venda de sapatos e roupa", "Transferências de capital e aquisição de ativos não produzidos", "Investimento direto estrangeiro", "Pagamento de salários"],
+            a: 1
+        },
+        {
+            q: "Onde se regista o Investimento Direto Estrangeiro (IED)?",
+            o: ["Balança Corrente", "Balança Financeira", "Balança de Bens", "Rendimento Secundário"],
+            a: 1
+        },
+        {
+            q: "Que fator facilitou a abertura do comércio internacional?",
+            o: ["O aumento dos custos de transporte", "Desenvolvimento e desregulamentação dos transportes e comunicações", "A proibição da internet", "O fecho das fronteiras"],
+            a: 1
+        },
+        {
+            q: "O Protecionismo caracteriza-se por:",
+            o: ["Eliminar todas as barreiras alfandegárias", "Aplicar barreiras para proteger a produção nacional", "Incentivar apenas o consumo de produtos estrangeiros", "Não cobrar impostos nas fronteiras"],
+            a: 1
+        },
+        {
+            q: "O Livre-cambismo defende:",
+            o: ["A imposição de quotas de importação", "A livre circulação de mercadorias e serviços", "O isolamento económico dos países", "Taxas alfandegárias muito elevadas"],
+            a: 1
+        },
+        {
+            q: "A balança de serviços inclui rubricas como:",
+            o: ["Venda de automóveis", "Viagens e Turismo e Transportes", "Donativos do Estado", "Heranças"],
+            a: 1
+        },
+        {
+            q: "Um saldo negativo na Balança Corrente indica que o país:",
+            o: ["Gastou menos do que recebeu do exterior", "Gastou mais do que recebeu nas rubricas correntes", "É totalmente independente do exterior", "Tem uma taxa de cobertura de 200%"],
+            a: 1
+        },
+        {
+            q: "A desregulamentação das comunicações permitiu:",
+            o: ["Dificultar o comércio eletrónico", "Trocas de informação e serviços em tempo real", "O fim da globalização", "Aumentar o preço dos bens"],
+            a: 1
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let timer = 0;
+    let timerInterval;
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'block';
+        startTimer();
+        showQuestion();
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timer++;
+            document.getElementById('timer').innerText = timer;
+        }, 1000);
+    }
+
+    function showQuestion() {
+        const q = questions[currentQuestion];
+        document.getElementById('q-count').innerText = currentQuestion + 1;
+        document.getElementById('question-text').innerText = q.q;
+        document.getElementById('feedback').innerText = "";
+        
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+        
+        q.o.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.innerText = option;
+            btn.onclick = () => checkAnswer(index);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(choice) {
+        const btns = document.querySelectorAll('.btn');
+        const correct = questions[currentQuestion].a;
+        const feedbackDiv = document.getElementById('feedback');
+
+        if (choice === correct) {
+            btns[choice].classList.add('correct');
+            score++;
+            document.getElementById('score').innerText = score;
+            const msgs = ["ÉS O MAIOR!!!!", "ÉS GRANDE!!!"];
+            feedbackDiv.innerText = msgs[Math.floor(Math.random() * msgs.length)];
+            feedbackDiv.style.color = "var(--secondary)";
+        } else {
+            btns[choice].classList.add('wrong');
+            btns[correct].classList.add('correct');
+            feedbackDiv.innerText = "ESTUDA…. O TESTE É AMANHÃ….";
+            feedbackDiv.style.color = "var(--primary)";
+        }
+
+        // Bloquear botões após resposta
+        btns.forEach(b => b.disabled = true);
+
+        setTimeout(() => {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }, 2000);
+    }
+
+    function endGame() {
+        clearInterval(timerInterval);
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        document.getElementById('final-stats').innerHTML = `
+            <p>Pontuação: <strong>${score} em 20</strong></p>
+            <p>Tempo Total: <strong>${timer} segundos</strong></p>
+            <p>${score > 15 ? "Excelente! Estás pronto!" : "Podes fazer melhor, volta a tentar!"}</p>
+        `;
+    }
+</script>
+
+</body>
+</html>
