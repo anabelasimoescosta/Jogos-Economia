@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Jogo: Crescimento e Desenvolvimento</title>
+<style>
+body {
+    background: linear-gradient(270deg, #ff512f, #dd2476, #24c6dc, #514a9d);
+    background-size: 800% 800%;
+    animation: gradientBG 15s ease infinite;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    text-align: center;
+}
+
+@keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+
+.container {
+    background: rgba(0,0,0,0.5);
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 900px;
+    margin: auto;
+    margin-top: 40px;
+    animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: scale(0.9);}
+    to {opacity: 1; transform: scale(1);}
+}
+
+button {
+    display: block;
+    margin: 12px auto;
+    padding: 14px;
+    width: 90%;
+    font-size: 16px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    background: #ffd700;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #fff;
+}
+
+#feedback {
+    font-size: 26px;
+    margin-top: 20px;
+    min-height: 40px;
+}
+
+#counter {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>🌍 Crescimento & Desenvolvimento 🌱</h1>
+<div id="counter"></div>
+<h2 id="question"></h2>
+<div id="answers"></div>
+<p id="feedback"></p>
+<button onclick="nextQuestion()">➡️ Próxima</button>
+</div>
+
+<script>
+const quiz = [
+{q:"O crescimento económico refere-se sobretudo a…", a:["A melhoria da qualidade de vida","O aumento da produção","A redução das desigualdades","O bem-estar social"], c:1},
+{q:"O desenvolvimento é um conceito mais amplo porque inclui…", a:["Só o PIB","A inflação","Aspetos económicos, sociais e humanos","Apenas o rendimento"], c:2},
+{q:"Um indicador de desenvolvimento humano é…", a:["Taxa de juro","IDH","Inflação","PIB nominal"], c:1},
+{q:"O IDH mede…", a:["Só riqueza","Educação, saúde e rendimento","Apenas educação","Só esperança de vida"], c:1},
+{q:"Uma limitação do PIB como indicador é…", a:["Não mede bem-estar","É muito complexo","É sempre igual","É demasiado social"], c:0},
+{q:"O capital humano é importante porque…", a:["Aumenta impostos","Melhora a produtividade","Diminui salários","Reduz educação"], c:1},
+{q:"O progresso técnico significa…", a:["Mais impostos","Mais desemprego","Inovação tecnológica","Mais pobreza"], c:2},
+{q:"Um país desenvolvido caracteriza-se por…", a:["Baixa produtividade","Produção moderna e elevada","Pouca tecnologia","Setor primário dominante"], c:1},
+{q:"A expansão é uma fase do ciclo com…", a:["Queda da produção","Aumento do desemprego","Crescimento económico","Crise financeira"], c:2},
+{q:"A recessão caracteriza-se por…", a:["Crescimento forte","Queda da atividade","Melhor nível de vida","Aumento do consumo"], c:1},
+{q:"Uma consequência ecológica do crescimento é…", a:["Mais florestas","Menos poluição","Degradação ambiental","Menos resíduos"], c:2},
+{q:"Desenvolvimento humano está ligado a…", a:["Só economia","Liberdade e direitos","Inflação","Exportações"], c:1},
+{q:"O IPM mede…", a:["Pobreza multidimensional","Inflação","PIB","Desemprego"], c:0},
+{q:"O IDG relaciona-se com…", a:["Ambiente","Género","Tecnologia","Educação"], c:1},
+{q:"O desenvolvimento sustentável procura…", a:["Explorar recursos","Ignorar o ambiente","Equilibrar economia, sociedade e ambiente","Só crescer economicamente"], c:2},
+{q:"Um aumento do capital humano afeta o crescimento económico porque…", a:["Reduz o investimento","Melhora a eficiência e a inovação","Aumenta apenas salários","Diminui a produtividade"], c:1},
+{q:"A diferença entre crescimento e desenvolvimento é melhor explicada por…", a:["O crescimento ignora o bem-estar","O desenvolvimento mede só o PIB","Ambos são sinónimos","O crescimento é social"], c:0},
+{q:"Um país pode ter crescimento sem desenvolvimento quando…", a:["A produção cresce mas a pobreza mantém-se","A educação melhora","A saúde aumenta","A desigualdade diminui"], c:0},
+{q:"O desenvolvimento sustentável implica que…", a:["O presente não deve considerar o futuro","Os recursos são infinitos","As gerações futuras devem ser protegidas","O ambiente é secundário"], c:2},
+{q:"A degradação ambiental prejudica o desenvolvimento humano porque…", a:["Aumenta apenas o PIB","Reduz a qualidade de vida e a saúde","Só afeta a economia","Não tem impacto social"], c:1}
+];
+
+let current = 0;
+let correct = 0;
+let wrong = 0;
+
+function loadQuestion(){
+    document.getElementById("feedback").innerText="";
+    document.getElementById("counter").innerText = 
+        "Questão " + (current+1) + " de " + quiz.length;
+    document.getElementById("question").innerText = quiz[current].q;
+
+    let answersDiv = document.getElementById("answers");
+    answersDiv.innerHTML = "";
+
+    quiz[current].a.forEach((ans, i)=>{
+        let btn = document.createElement("button");
+        btn.innerText = ans;
+        btn.onclick = ()=>checkAnswer(i);
+        answersDiv.appendChild(btn);
+    });
+}
+
+function checkAnswer(i){
+    const feedback = document.getElementById("feedback");
+    if(i === quiz[current].c){
+        correct++;
+        feedback.innerText = "🎉 Muito Bem!!!!";
+    } else {
+        wrong++;
+        feedback.innerText = "⚠️ Está atento nas próximas aulas….";
+    }
+}
+
+function nextQuestion(){
+    current++;
+    if(current < quiz.length){
+        loadQuestion();
+    } else {
+        document.getElementById("counter").innerText = "";
+        document.getElementById("question").innerText = "🏁 Fim do Jogo!";
+        document.getElementById("answers").innerHTML = "";
+        document.getElementById("feedback").innerText =
+            "Resultados:\n" +
+            "✔️ Certas: " + correct + "\n" +
+            "❌ Erradas: " + wrong;
+    }
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
