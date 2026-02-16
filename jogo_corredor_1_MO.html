@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desafio Economia 360º</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    text-align:center;
+    background: linear-gradient(135deg,#ff6ec4,#7873f5,#4ade80);
+    color:white;
+}
+
+.container{
+    width:95%;
+    max-width:750px;
+    margin:20px auto;
+    background:rgba(0,0,0,0.8);
+    padding:20px;
+    border-radius:18px;
+}
+
+h1{font-size:22px;}
+h2{font-size:18px;}
+
+button{
+    width:100%;
+    padding:14px;
+    margin:8px 0;
+    border-radius:10px;
+    border:none;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.basic{background:#2ecc71;}
+.medium{background:#f1c40f;color:black;}
+.advanced{background:#e74c3c;}
+.answerBtn{background:#3498db;color:white;}
+
+button:hover{opacity:0.85;}
+
+#progressBar{
+    width:100%;
+    background:#555;
+    border-radius:10px;
+    margin:15px 0;
+}
+
+#progress{
+    height:18px;
+    width:0%;
+    background:#2ecc71;
+    border-radius:10px;
+}
+
+.hidden{display:none;}
+
+#feedback{
+    margin-top:15px;
+    font-weight:bold;
+    font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="cover" class="container">
+    <h1>📊 Desafio Economia 360º</h1>
+    <p>Escolhe o teu nível e testa os teus conhecimentos sobre Economia, Impostos, Contabilidade, Gestão e Bancos.</p>
+    <button class="basic" onclick="startGame('basic')">🟢 Nível Básico</button>
+    <button class="medium" onclick="startGame('medium')">🟡 Nível Intermédio</button>
+    <button class="advanced" onclick="startGame('advanced')">🔴 Nível Avançado</button>
+</div>
+
+<div id="game" class="container hidden">
+    <h2 id="question"></h2>
+    <p id="questionNumber"></p>
+    <div id="progressBar"><div id="progress"></div></div>
+    <div id="answers"></div>
+    <div id="feedback"></div>
+</div>
+
+<div id="result" class="container hidden">
+    <h2>Resultado Final</h2>
+    <p id="scoreText"></p>
+    <p><strong>Se queres saber mais sobre estes assuntos, inscreve-te no 10.º ano do curso profissional de técnico de Gestão.</strong></p>
+    <button onclick="location.reload()">Escolher Novo Nível</button>
+</div>
+
+<script>
+
+const questionBank = {
+
+basic:[
+{q:"Uma empresa vende 100 produtos a 5€ cada. Receita total?",a:["500€","100€","5€","1000€"],c:0},
+{q:"Se as despesas forem 300€ e as receitas 500€, o lucro é:",a:["200€","800€","300€","500€"],c:0},
+{q:"O IVA é pago principalmente sobre:",a:["Consumo","Salários","Lucros","Depósitos bancários"],c:0},
+{q:"Um orçamento serve para:",a:["Planear receitas e despesas","Pedir empréstimos","Evitar impostos","Calcular multas"],c:0},
+{q:"Guardar dinheiro no banco chama-se:",a:["Poupança","Despesa","Passivo","IVA"],c:0},
+{q:"Um empréstimo implica:",a:["Devolver dinheiro com juros","Receber oferta","Não pagar nada","Ter lucro imediato"],c:0},
+{q:"Receitas são:",a:["Entradas de dinheiro","Saídas","Multas","Dívidas"],c:0},
+{q:"Despesas são:",a:["Saídas de dinheiro","Entradas","Lucro","Investimentos financeiros"],c:0},
+{q:"O IRS incide sobre:",a:["Rendimento","Compras","Exportações","Depósitos"],c:0},
+{q:"Se o preço sobe e as vendas descem, pode significar:",a:["Menor procura","Maior lucro garantido","Mais produção","Menos custos"],c:0},
+{q:"Capital próprio é:",a:["Ativo - Passivo","Passivo - Ativo","Receitas - despesas","Lucro bruto"],c:0},
+{q:"Se poupares 20€ por mês durante 12 meses tens:",a:["240€","200€","120€","20€"],c:0},
+{q:"Uma despesa fixa é:",a:["Renda mensal","Compra ocasional","Comissão variável","Lucro anual"],c:0},
+{q:"O banco empresta dinheiro através de:",a:["Crédito","IVA","IRS","Receita fiscal"],c:0},
+{q:"Lucro significa:",a:["Receitas maiores que despesas","Prejuízo","Multa","Imposto"],c:0}
+],
+
+medium:[
+{q:"Uma empresa fatura 2000€ e tem custos de 1500€. Resultado?",a:["500€ lucro","500€ prejuízo","2000€ lucro","1500€ lucro"],c:0},
+{q:"Produto 100€ + IVA 23% =",a:["123€","120€","130€","110€"],c:0},
+{q:"Ativos 80.000€ e passivos 50.000€. Capital próprio?",a:["30.000€","130.000€","50.000€","80.000€"],c:0},
+{q:"Salário bruto 1500€ - 300€ impostos =",a:["1200€","1500€","1800€","300€"],c:0},
+{q:"Se despesas > receitas há:",a:["Prejuízo","Lucro","Equilíbrio","Superavit"],c:0},
+{q:"Taxa de juro de 5% sobre 1000€ durante 1 ano gera:",a:["50€","5€","500€","100€"],c:0},
+{q:"Inflação elevada reduz:",a:["Poder de compra","Salário nominal","IVA","Receitas do Estado"],c:0},
+{q:"Custo variável depende:",a:["Quantidade produzida","Renda fixa","Impostos anuais","Capital próprio"],c:0},
+{q:"IRS é imposto direto porque:",a:["Incide sobre rendimento","Incide sobre consumo","É opcional","É voluntário"],c:0},
+{q:"Liquidez significa:",a:["Capacidade de pagar dívidas a curto prazo","Lucro elevado","Receita fiscal","Saldo negativo"],c:0},
+{q:"Break-even ocorre quando:",a:["Receitas = despesas","Lucro máximo","Prejuízo","IVA zero"],c:0},
+{q:"Superavit orçamental significa:",a:["Receitas > despesas","Despesas > receitas","Equilíbrio","Crise"],c:0},
+{q:"Se margem lucro 10% sobre 5000€ =",a:["500€","50€","100€","1000€"],c:0},
+{q:"Banco Central controla:",a:["Política monetária","Vendas das empresas","IVA municipal","Lucro privado"],c:0},
+{q:"Investimento produtivo visa:",a:["Aumentar capacidade futura","Reduzir impostos","Diminuir vendas","Eliminar salários"],c:0}
+],
+
+advanced:[
+{q:"Empresa com ativo 150.000€ e passivo 90.000€. Capital próprio?",a:["60.000€","240.000€","90.000€","150.000€"],c:0},
+{q:"Juro simples 8% sobre 2000€ por 2 anos =",a:["320€","160€","400€","80€"],c:0},
+{q:"Se custos fixos aumentam, o ponto de equilíbrio:",a:["Aumenta","Diminui","Desaparece","Fica igual"],c:0},
+{q:"Inflação resulta frequentemente de:",a:["Excesso de procura","Falta de produção monetária","Queda de consumo","Redução salários"],c:0},
+{q:"Autonomia financeira calcula-se:",a:["Capital próprio/Ativo","Ativo/Passivo","Lucro/Receita","Passivo/Ativo"],c:0},
+{q:"Se taxa de juro sobe, o crédito tende a:",a:["Diminuir","Aumentar","Duplicar","Desaparecer"],c:0},
+{q:"Défice público implica:",a:["Despesas > receitas","Receitas > despesas","Lucro","Equilíbrio"],c:0},
+{q:"Rentabilidade mede:",a:["Eficiência do investimento","Valor do IVA","Número de funcionários","Montante de passivos"],c:0},
+{q:"Se vendas descem mas custos mantêm-se, lucro:",a:["Diminui","Aumenta","Fica igual","Duplica"],c:0},
+{q:"Capital de giro refere-se a:",a:["Recursos para atividade corrente","Lucro líquido","IVA anual","Investimento imobiliário"],c:0},
+{q:"Banco comercial ganha através de:",a:["Juros cobrados","Impostos","Multas","Salários"],c:0},
+{q:"Taxa efetiva considera:",a:["Capitalização dos juros","Apenas capital","IVA","IRS"],c:0},
+{q:"Se receita marginal < custo marginal deve-se:",a:["Reduzir produção","Aumentar preço sempre","Ignorar custos","Aumentar produção"],c:0},
+{q:"Passivo corrente é dívida:",a:["Curto prazo","Longo prazo","Inexistente","Fiscal apenas"],c:0},
+{q:"Diversificação reduz:",a:["Risco","Lucro","Receita","Capital próprio"],c:0}
+]
+
+};
+
+let current=0;
+let score=0;
+let selectedLevel="";
+
+function startGame(level){
+selectedLevel=level;
+current=0;
+score=0;
+document.getElementById("cover").classList.add("hidden");
+document.getElementById("game").classList.remove("hidden");
+showQuestion();
+}
+
+function showQuestion(){
+let q=questionBank[selectedLevel][current];
+document.getElementById("question").innerText=q.q;
+document.getElementById("questionNumber").innerText="Questão "+(current+1)+" de "+questionBank[selectedLevel].length;
+document.getElementById("progress").style.width=(current/questionBank[selectedLevel].length)*100+"%";
+
+let answersDiv=document.getElementById("answers");
+answersDiv.innerHTML="";
+document.getElementById("feedback").innerText="";
+
+q.a.forEach((option,index)=>{
+let btn=document.createElement("button");
+btn.className="answerBtn";
+btn.innerText=option;
+btn.onclick=function(){checkAnswer(index);};
+answersDiv.appendChild(btn);
+});
+}
+
+function checkAnswer(index){
+let q=questionBank[selectedLevel][current];
+let feedback=document.getElementById("feedback");
+
+if(index===q.c){
+score++;
+feedback.style.color="#2ecc71";
+feedback.innerText="✅ Resposta correta!";
+}else{
+feedback.style.color="#ff7675";
+feedback.innerText="❌ Incorreto. A resposta correta é: "+q.a[q.c];
+}
+
+setTimeout(function(){
+current++;
+if(current<questionBank[selectedLevel].length){
+showQuestion();
+}else{
+endGame();
+}
+},3000);
+}
+
+function endGame(){
+document.getElementById("game").classList.add("hidden");
+document.getElementById("result").classList.remove("hidden");
+document.getElementById("progress").style.width="100%";
+document.getElementById("scoreText").innerText="Pontuação final: "+score+" / "+questionBank[selectedLevel].length;
+}
+
+</script>
+
+</body>
+</html>
