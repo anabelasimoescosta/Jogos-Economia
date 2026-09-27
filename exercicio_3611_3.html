@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio de Turismo 10.º Ano - Verdadeiro ou Falso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f76b1c 100%);
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .pulse-btn {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 min-h-screen">
+
+    <div class="w-full max-w-2xl">
+        
+        <!-- ================= CAPA INICIAL ================= -->
+        <div id="screen-welcome" class="glass-card rounded-3xl p-8 text-center border-4 border-yellow-400 fade-in">
+            <div class="inline-block bg-yellow-400 text-purple-900 font-extrabold px-4 py-1 rounded-full text-sm mb-4 uppercase tracking-wider">
+                Módulo de Turismo • 10.º Ano
+            </div>
+            <div class="text-6xl mb-4">🌍✈️🏨</div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-700 via-pink-600 to-red-500 mb-4">
+                Desafio do Conhecimento Turístico
+            </h1>
+            <p class="text-gray-700 text-base md:text-lg mb-6 leading-relaxed">
+                Bem-vindo(a), futuro(a) profissional de Turismo! Prepara-te para testar os teus conhecimentos sobre 
+                <span class="font-bold text-purple-700">Procura Turística, Elasticidade e Teorias do Consumo</span>. 
+                Será que estás atento(a) às aulas? Responde às 12 perguntas e descobre a tua pontuação!
+            </p>
+            
+            <div class="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-2xl mb-8 border border-purple-200">
+                <div class="flex items-center justify-center space-x-6 text-purple-800 font-semibold text-sm md:text-base">
+                    <div><i class="fa-solid fa-list-check text-xl block text-purple-600"></i> 12 Questões</div>
+                    <div><i class="fa-solid fa-bolt text-xl block text-yellow-500"></i> Verdadeiro / Falso</div>
+                    <div><i class="fa-solid fa-trophy text-xl block text-amber-500"></i> Feedback Imediato</div>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="pulse-btn w-full md:w-auto bg-gradient-to-r from-emerald-400 to-teal-600 hover:from-emerald-500 hover:to-teal-700 text-white font-extrabold text-xl px-10 py-4 rounded-2xl shadow-xl transition transform hover:-translate-y-1">
+                🚀 INICIAR JOGO
+            </button>
+        </div>
+
+        <!-- ================= ECRÃ DE JOGO ================= -->
+        <div id="screen-game" class="glass-card rounded-3xl p-6 md:p-8 hidden fade-in">
+            <!-- Progress Header -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2 font-bold text-gray-700 text-sm md:text-base">
+                    <span id="question-counter" class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full border border-purple-300">
+                        Pergunta 1 de 12
+                    </span>
+                    <span id="score-live" class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full border border-emerald-300">
+                        Pontuação: 0
+                    </span>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden border border-gray-300">
+                    <div id="progress-bar" class="bg-gradient-to-r from-pink-500 to-purple-600 h-4 rounded-full transition-all duration-500" style="width: 8.33%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border-2 border-indigo-200 mb-6 shadow-inner min-h-[160px] flex items-center justify-center">
+                <h2 id="question-text" class="text-lg md:text-xl font-bold text-gray-800 text-center leading-snug">
+                    <!-- A pergunta é inserida via JS -->
+                </h2>
+            </div>
+
+            <!-- Answer Buttons -->
+            <div id="action-buttons" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <button onclick="checkAnswer(true)" class="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white font-extrabold text-xl py-4 px-6 rounded-2xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-circle-check text-2xl"></i>
+                    <span>VERDADEIRO</span>
+                </button>
+                <button onclick="checkAnswer(false)" class="bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white font-extrabold text-xl py-4 px-6 rounded-2xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-circle-xmark text-2xl"></i>
+                    <span>FALSO</span>
+                </button>
+            </div>
+
+            <!-- Feedback Modal/Box (Initially Hidden) -->
+            <div id="feedback-box" class="hidden p-5 rounded-2xl border-2 mb-6 fade-in text-center">
+                <h3 id="feedback-title" class="text-2xl font-black mb-2"></h3>
+                <p id="feedback-explanation" class="text-gray-800 text-sm md:text-base font-medium mb-4 leading-relaxed"></p>
+                <button onclick="nextQuestion()" class="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-8 py-3 rounded-xl shadow-md transition">
+                    Próxima Pergunta <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= ECRÃ FINAL DE RESULTADOS ================= -->
+        <div id="screen-result" class="glass-card rounded-3xl p-8 text-center hidden fade-in border-4 border-pink-400">
+            <div class="text-6xl mb-4" id="result-emoji">🎉</div>
+            <h1 class="text-3xl font-black text-gray-800 mb-2">Resultado Final</h1>
+            <p class="text-gray-600 font-semibold mb-6">Concluíste o Desafio de Turismo!</p>
+
+            <div class="bg-purple-50 rounded-2xl p-6 border-2 border-purple-200 mb-6">
+                <div class="text-5xl font-black text-purple-700 mb-2" id="final-score">0 / 12</div>
+                <div class="text-lg font-bold text-gray-700" id="final-percentage">0% de acertos</div>
+                <div id="stars-container" class="text-yellow-400 text-3xl mt-3"></div>
+            </div>
+
+            <p id="final-message" class="text-base md:text-lg font-medium text-gray-700 mb-8 px-2"></p>
+
+            <button onclick="startGame()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-extrabold text-xl px-10 py-4 rounded-2xl shadow-xl transition transform hover:-translate-y-1">
+                🔄 JOGAR NOVAMENTE
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Array com as 12 perguntas baseadas no PPT do 10.º Ano
+        const questions = [
+            {
+                text: "A Procura Interna corresponde às deslocações realizadas por residentes em Portugal que visitam países estrangeiros.",
+                correct: false,
+                explanation: "Falso! A Procura Interna refere-se a deslocações de residentes dentro do próprio território nacional. As deslocações de residentes para o estrangeiro designam-se procura emissora."
+            },
+            {
+                text: "Em 2025, o lazer, recreio ou férias constituiu a principal motivação para as viagens dos residentes em Portugal.",
+                correct: true,
+                explanation: "Verdadeiro! De acordo com os dados apresentados, cerca de 50,3% da população residente viajou e a principal motivação foi o lazer, recreio ou férias."
+            },
+            {
+                text: "Em Turismo, o conceito de 'Utilidade' representa a capacidade de um produto ou serviço turístico satisfazer uma necessidade ou desejo do turista.",
+                correct: true,
+                explanation: "Verdadeiro! Por exemplo, se um turista procura descanso e escolhe um hotel na praia, esse hotel apresenta utilidade porque satisfaz essa necessidade."
+            },
+            {
+                text: "A elasticidade da procura mede o grau de reação da quantidade procurada quando se altera um fator como o preço, o rendimento ou os custos de transporte.",
+                correct: true,
+                explanation: "Verdadeiro! A elasticidade analisa a sensibilidade da procura face a variações económicas como preços, custos de transporte e rendimento disponível."
+            },
+            {
+                text: "Se o preço de um quarto de hotel subir e as reservas diminuírem muito pouco, dizemos que a procura apresenta uma elevada sensibilidade ao preço.",
+                correct: false,
+                explanation: "Falso! Se as reservas diminuírem pouco após o aumento do preço, significa que a procura tem MENOR sensibilidade ao preço."
+            },
+            {
+                text: "Quando o preço das viagens aumenta significativamente, a reação do consumidor limita-se obrigatoriamente a cancelar a viagem.",
+                correct: false,
+                explanation: "Falso! Perante um aumento do preço, a família pode reagir de várias formas: manter a viagem, escolher um destino mais barato, reduzir a estadia ou adiar a viagem."
+            },
+            {
+                text: "Segundo a Teoria de Swarbrooke e Horner, a escolha de uma viagem é motivada exclusivamente por uma única razão individual.",
+                correct: false,
+                explanation: "Falso! A ideia-chave desta teoria é que a decisão de viajar resulta da combinação de múltiplos fatores (pessoais, sociais, experiências passadas, imagem do destino, etc.)."
+            },
+            {
+                text: "A Teoria de Crompton e McKay distingue duas grandes categorias de motivações: as motivações de fuga (push) e as motivações de atração (pull).",
+                correct: true,
+                explanation: "Verdadeiro! A teoria divide as motivações em impulsos internos para escapar à rotina (push) e atrativos específicos do destino (pull)."
+            },
+            {
+                text: "Os fatores Push (motivações sociopsicológicas) representam os atributos específicos que o destino oferece para atrair o visitante, como a beleza natural e os eventos.",
+                correct: false,
+                explanation: "Falso! Os atributos do destino são fatores PULL (atração). Os fatores PUSH são os impulsos internos do próprio indivíduo (como a necessidade de descanso ou exploração cultural)."
+            },
+            {
+                text: "A necessidade de escapar à rotina, reduzir o stress quotidiano e procurar recuperar o equilíbrio é considerada uma motivação do tipo Push.",
+                correct: true,
+                explanation: "Verdadeiro! O desejo de fuga à rotina diária e de recuperação do equilíbrio mental é um impulso interno clássico da categoria Push."
+            },
+            {
+                text: "A qualidade de um festival de música e as infraestruturas de segurança de uma cidade turística são exemplos de Fatores Pull de um destino.",
+                correct: true,
+                explanation: "Verdadeiro! Os fatores Pull são os atrativos do destino que puxam/atraem o turista, incluindo eventos, património, clima e segurança."
+            },
+            {
+                text: "A Procura Externa consiste nas deslocações de não residentes que visitam o território português.",
+                correct: true,
+                explanation: "Verdadeiro! A Procura Externa (ou recetora) abrange os turistas estrangeiros/não residentes que viajam para Portugal."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // Iniciar ou reiniciar o jogo
+        function startGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById("screen-welcome").classList.add("hidden");
+            document.getElementById("screen-result").classList.add("hidden");
+            document.getElementById("screen-game").classList.remove("hidden");
+            showQuestion();
+        }
+
+        // Exibir a pergunta atual
+        function showQuestion() {
+            const q = questions[currentQuestionIndex];
+            
+            // Atualizar contadores e barra de progresso
+            document.getElementById("question-counter").innerText = `Pergunta ${currentQuestionIndex + 1} de ${questions.length}`;
+            document.getElementById("score-live").innerText = `Pontuação: ${score}`;
+            const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById("progress-bar").style.width = `${progressPercent}%`;
+
+            // Atualizar texto da pergunta
+            document.getElementById("question-text").innerText = q.text;
+
+            // Esconder caixa de feedback e reativar botões
+            document.getElementById("feedback-box").classList.add("hidden");
+            document.getElementById("action-buttons").classList.remove("hidden");
+        }
+
+        // Validar a resposta escolhida
+        function checkAnswer(userChoice) {
+            const q = questions[currentQuestionIndex];
+            const isCorrect = (userChoice === q.correct);
+
+            // Esconder botões de resposta temporariamente
+            document.getElementById("action-buttons").classList.add("hidden");
+
+            const feedbackBox = document.getElementById("feedback-box");
+            const feedbackTitle = document.getElementById("feedback-title");
+            const feedbackExp = document.getElementById("feedback-explanation");
+
+            feedbackBox.classList.remove("hidden");
+
+            if (isCorrect) {
+                score++;
+                document.getElementById("score-live").innerText = `Pontuação: ${score}`;
+                feedbackTitle.innerText = "PARABÉNS!";
+                feedbackTitle.className = "text-2xl font-black mb-2 text-emerald-600";
+                feedbackBox.className = "p-5 rounded-2xl border-2 mb-6 fade-in text-center bg-emerald-50 border-emerald-300";
+            } else {
+                feedbackTitle.innerText = "Está mais atento(a) nas aulas!";
+                feedbackTitle.className = "text-2xl font-black mb-2 text-rose-600";
+                feedbackBox.className = "p-5 rounded-2xl border-2 mb-6 fade-in text-center bg-rose-50 border-rose-300";
+            }
+
+            feedbackExp.innerText = q.explanation;
+        }
+
+        // Passar à pergunta seguinte ou terminar
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Mostrar ecrã final de pontuação
+        function showResults() {
+            document.getElementById("screen-game").classList.add("hidden");
+            document.getElementById("screen-result").classList.remove("hidden");
+
+            const percentage = Math.round((score / questions.length) * 100);
+            document.getElementById("final-score").innerText = `${score} / ${questions.length}`;
+            document.getElementById("final-percentage").innerText = `${percentage}% de respostas corretas`;
+
+            let emoji = "🎉";
+            let stars = "⭐⭐⭐⭐⭐";
+            let message = "";
+
+            if (score === 12) {
+                emoji = "🏆";
+                stars = "⭐⭐⭐⭐⭐";
+                message = "Excelente! Dominas perfeitamente todos os conceitos de Turismo do 10.º Ano! Continua assim!";
+            } else if (score >= 9) {
+                emoji = "🌟";
+                stars = "⭐⭐⭐⭐☆";
+                message = "Muito bom trabalho! Tens um ótimo conhecimento da matéria. Revisa apenas os pequenos detalhes!";
+            } else if (score >= 6) {
+                emoji = "👍";
+                stars = "⭐⭐⭐☆☆";
+                message = "Bom esforço! Estás no bom caminho, mas vale a pena rever os conceitos de Elasticidade e Teorias das Motivações.";
+            } else {
+                emoji = "📚";
+                stars = "⭐⭐☆☆☆";
+                message = "Precisa de estudo! Recomenda-se rever atentamente a matéria de Procura Turística e as Teorias de Swarbrooke e Crompton.";
+            }
+
+            document.getElementById("result-emoji").innerText = emoji;
+            document.getElementById("stars-container").innerText = stars;
+            document.getElementById("final-message").innerText = message;
+        }
+    </script>
+</body>
+</html>
