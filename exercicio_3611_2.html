@@ -1,1 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio: A Indústria Turística (10.º Ano)</title>
+    <style>
+        :root {
+            --primary: #4A154B;
+            --secondary: #00A896;
+            --accent: #FFB703;
+            --correct: #2EC4B6;
+            --incorrect: #E63946;
+            --bg-gradient: linear-gradient(135deg, #FF9F1C, #FFBF69, #2EC4B6, #00BBF9);
+            --card-bg: #FFFFFF;
+            --text-dark: #2B2D42;
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            width: 100%;
+            max-width: 750px;
+            padding: 35px;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #FFF;
+        }
+
+        /* Capa */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            text-align: center;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        p.description {
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .badge-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            background: #F4F4F9;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .badge {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        .btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 6px 0 #007A6C;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #007A6C;
+            background-color: #02c39a;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #007A6C;
+        }
+
+        /* Barra de Progresso */
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 14px;
+            background-color: #E0E0E0;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        /* Pergunta */
+        .question-text {
+            font-size: 1.25rem;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background-color: #F8F9FA;
+            border: 2px solid #E9ECEF;
+            border-radius: 14px;
+            padding: 14px 20px;
+            font-size: 1rem;
+            color: var(--text-dark);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .option-btn:hover:not([disabled]) {
+            background-color: #E2F0D9;
+            border-color: var(--secondary);
+            transform: translateX(5px);
+        }
+
+        .option-btn.correct {
+            background-color: #D4EDDA !important;
+            border-color: var(--correct) !important;
+            color: #155724 !important;
+            font-weight: bold;
+        }
+
+        .option-btn.incorrect {
+            background-color: #F8D7DA !important;
+            border-color: var(--incorrect) !important;
+            color: #721C24 !important;
+        }
+
+        /* Feedback Box */
+        .feedback-box {
+            display: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback-box.correct {
+            display: block;
+            background-color: #D4EDDA;
+            border: 2px solid var(--correct);
+            color: #155724;
+        }
+
+        .feedback-box.incorrect {
+            display: block;
+            background-color: #F8D7DA;
+            border: 2px solid var(--incorrect);
+            color: #721C24;
+        }
+
+        .feedback-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .feedback-text {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* Ecrã de Resultados */
+        .result-score {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary);
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .result-message {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: var(--text-dark);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- ECRÃ INICIAL / CAPA -->
+    <div id="start-screen" class="screen active">
+        <h1>✈️ Desafio do Turismo 🏨</h1>
+        <p class="description">
+            Bem-vindo(a)! Prepara-te para testar os teus conhecimentos sobre a <strong>Indústria Turística, Empresas e Serviços Turísticos</strong>.
+            Demostra o que aprendeste nas aulas e acumula a melhor pontuação!
+        </p>
+        
+        <div class="badge-bar">
+            <span class="badge">🎯 10 Questões</span>
+            <span class="badge">🎓 Nível: 10.º Ano</span>
+            <span class="badge">⏱️ Sem Tempo Limite</span>
+        </div>
+
+        <button class="btn" onclick="startGame()">Começar Jogo</button>
+    </div>
+
+    <!-- ECRÃ DE JOGO -->
+    <div id="game-screen" class="screen">
+        <div class="progress-header">
+            <span id="question-count">Questão 1 de 10</span>
+            <span id="score-count">Pontuação: 0</span>
+        </div>
+        
+        <div class="progress-bar-bg">
+            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+        </div>
+
+        <div id="question-text" class="question-text">Texto da Pergunta</div>
+
+        <div id="options-container" class="options-grid">
+            <!-- Opções geradas via JS -->
+        </div>
+
+        <div id="feedback-box" class="feedback-box">
+            <div id="feedback-title" class="feedback-title"></div>
+            <div id="feedback-text" class="feedback-text"></div>
+        </div>
+
+        <button id="next-btn" class="btn" style="display: none;" onclick="nextQuestion()">Próxima Questão ➔</button>
+    </div>
+
+    <!-- ECRÃ DE RESULTADOS -->
+    <div id="result-screen" class="screen">
+        <h1>🏆 Fim do Desafio!</h1>
+        <div class="result-score" id="final-score">8 / 10</div>
+        <p class="result-message" id="final-message">Excelente trabalho!</p>
+        <button class="btn" onclick="restartGame()">Jogar Novamente</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            question: "1. O que define a Indústria Turística?",
+            options: [
+                "Apenas o conjunto dos hotéis e alojamentos locais.",
+                "O conjunto de empresas, organizações e atividades envolvidas na oferta do produto turístico.",
+                "Exclusivamente as empresas de transportes aéreos e marítimos.",
+                "Uma indústria transformadora que fabrique souvenirs e artigos de viagem."
+            ],
+            correct: 1,
+            explanation: "A indústria turística engloba diversas áreas como alojamento, restauração, transportes, animação e distribuição[cite: 2]."
+        },
+        {
+            question: "2. Diz-se que o produto turístico é 'compósito' porque:",
+            options: [
+                "É vendido apenas a um preço único e invariável.",
+                "É constituído apenas por bens materiais duradouros.",
+                "Resulta da combinação e complementaridade de diferentes bens e serviços.",
+                "Não pode ser consumido no destino."
+            ],
+            correct: 2,
+            explanation: "O produto turístico junta alojamento, transporte, restauração e atrações para formar uma experiência global[cite: 2]."
+        },
+        {
+            question: "3. O que caracteriza a 'inelasticidade da oferta turística' no curto prazo?",
+            options: [
+                "A facilidade de mudar a localização de um hotel de uma cidade para outra.",
+                "A capacidade limitada de ajustar a quantidade de serviços (ex.: quartos) em resposta a variações bruscas da procura.",
+                "O facto de os preços dos bilhetes de avião serem sempre iguais.",
+                "A possibilidade de criar 50 quartos de hotel novos de um dia para o outro."
+            ],
+            correct: 1,
+            explanation: "A capacidade da infraestrutura turística é fixa no curto prazo[cite: 2]."
+        },
+        {
+            question: "4. Qual destas é uma consequência direta da 'Sazonalidade' no Turismo?",
+            options: [
+                "Consumo e procura perfeitamente iguais ao longo de todos os meses do ano.",
+                "Variação significativa da procura, gerando picos de atividade e períodos de menor ocupação.",
+                "Redução permanente da oferta de voos internacionais.",
+                "Incapacidade de realizar atividades de animação no Verão."
+            ],
+            correct: 1,
+            explanation: "A sazonalidade cria oscilações da procura ao longo das estações do ano[cite: 2]."
+        },
+        {
+            question: "5. Recursos endógenos turísticos são aqueles que:",
+            options: [
+                "Podem ser facilmente importados e transportados entre diferentes países.",
+                "São próprios de um determinado território e não podem ser deslocalizados (ex.: praias, património histórico).",
+                "Pertencem exclusivamente a companhias aéreas estrangeiras.",
+                "Não trazem qualquer valor para a comunidade local."
+            ],
+            correct: 1,
+            explanation: "Recursos endógenos são específicos e próprios de cada território[cite: 2]."
+        },
+        {
+            question: "6. Qual é a principal diferença entre um Operador Turístico e uma Agência de Viagens?",
+            options: [
+                "O Operador cria e organiza os pacotes turísticos; a Agência de Viagens comercializa-os (retalhista).",
+                "A Agência cria os aviões e o Operador vende os bilhetes.",
+                "O Operador só atende clientes presenciais; a Agência vende apenas na internet.",
+                "Não existe nenhuma diferença entre ambos."
+            ],
+            correct: 0,
+            explanation: "O operador desenha o pacote turístico (grossista) e a agência de viagens vende-o ao cliente final (retalhista)[cite: 2]."
+        },
+        {
+            question: "7. Por que razão dizemos que a produção e o consumo no turismo são simultâneos?",
+            options: [
+                "Porque o cliente compra o serviço depois de já ter regressado a casa.",
+                "Porque o serviço é prestado e consumido enquanto o cliente está presente (ex.: refeição ou estadia).",
+                "Porque os produtos turísticos podem ser guardados em stock num armazém.",
+                "Porque não requer qualquer contacto entre o profissional e o turista."
+            ],
+            correct: 1,
+            explanation: "A prestação do serviço acontece ao mesmo tempo em que o turista o desfruta[cite: 2]."
+        },
+        {
+            question: "8. Qual das seguintes opções descreve um BENEFÍCIO socioeconómico do turismo?",
+            options: [
+                "Congestionamento e pressão excessiva sobre o trânsito e resíduos.",
+                "Criação de emprego, dinamização do comércio local e valorização do património cultural.",
+                "Saturar os recursos naturais locais sem planeamento.",
+                "Perda de identidade das comunidades locais."
+            ],
+            correct: 1,
+            explanation: "O turismo impulsiona a economia local, cria emprego e valoriza a cultura[cite: 2]."
+        },
+        {
+            question: "9. O Turismo Sustentável procura essencialmente:",
+            options: [
+                "Aumentar ao máximo o número de turistas, independentemente dos impactos sociais ou ambientais.",
+                "Equilibrar os benefícios económicos com a preservação do ambiente, da cultura e do bem-estar da comunidade local.",
+                "Proibir totalmente a deslocação de turistas para zonas costeiras.",
+                "Construir apenas grandes complexos hoteleiros em áreas protegidas."
+            ],
+            correct: 1,
+            explanation: "A sustentabilidade exige um equilíbrio entre economia, ambiente, sociedade e cultura[cite: 2]."
+        },
+        {
+            question: "10. Se um cliente ficar insatisfeito com a visita guiada, como é afetada a sua avaliação do destino?",
+            options: [
+                "Não afeta em nada, pois a visita guiada é independente do resto da viagem.",
+                "Pode afetar a perceção global da viagem, pois os componentes do produto turístico estão interligados.",
+                "Melhora a experiência global do alojamento.",
+                "Faz com que o turista ganhe um reembolso automático de todos os transportes."
+            ],
+            correct: 1,
+            explanation: "Como o produto turístico é compósito e complementar, a má experiência num serviço afeta a imagem global[cite: 2]."
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const questionCount = document.getElementById('question-count');
+    const scoreCount = document.getElementById('score-count');
+    const progressBarFill = document.getElementById('progress-bar-fill');
+    const feedbackBox = document.getElementById('feedback-box');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackText = document.getElementById('feedback-text');
+    const nextBtn = document.getElementById('next-btn');
+
+    function startGame() {
+        startScreen.classList.remove('active');
+        gameScreen.classList.add('active');
+        currentQuestionIndex = 0;
+        score = 0;
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const q = questions[currentQuestionIndex];
+        
+        // Atualizar textos e progresso
+        questionCount.innerText = `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
+        scoreCount.innerText = `Pontuação: ${score}`;
+        progressBarFill.style.width = `${((currentQuestionIndex) / questions.length) * 100}%`;
+        
+        questionText.innerText = q.question;
+        
+        // Limpar opções e feedback
+        optionsContainer.innerHTML = '';
+        feedbackBox.className = 'feedback-box';
+        feedbackBox.style.display = 'none';
+        nextBtn.style.display = 'none';
+
+        // Renderizar opções
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => selectOption(index);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function selectOption(selectedIndex) {
+        const q = questions[currentQuestionIndex];
+        const buttons = optionsContainer.children;
+
+        // Desativar todos os botões
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].disabled = true;
+        }
+
+        if (selectedIndex === q.correct) {
+            score++;
+            buttons[selectedIndex].classList.add('correct');
+            feedbackTitle.innerText = "PARABÉNS";
+            feedbackText.innerText = q.explanation;
+            feedbackBox.className = 'feedback-box correct';
+        } else {
+            buttons[selectedIndex].classList.add('incorrect');
+            buttons[q.correct].classList.add('correct');
+            feedbackTitle.innerText = "Está mais atento(a) nas aulas";
+            feedbackText.innerText = q.explanation;
+            feedbackBox.className = 'feedback-box incorrect';
+        }
+
+        scoreCount.innerText = `Pontuação: ${score}`;
+        nextBtn.style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        gameScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+        
+        const scoreElement = document.getElementById('final-score');
+        const messageElement = document.getElementById('final-message');
+        
+        scoreElement.innerText = `${score} / ${questions.length}`;
+        
+        if (score === 10) {
+            messageElement.innerText = "🌟 Excelente! Demonstraste um domínio perfeito dos conteúdos lecionados!";
+        } else if (score >= 7) {
+            messageElement.innerText = "👏 Muito bom trabalho! Estiveste muito atento(a) nas aulas de Turismo.";
+        } else if (score >= 5) {
+            messageElement.innerText = "👍 Bom esforço! Revisa alguns conceitos para consolidares a matéria.";
+        } else {
+            messageElement.innerText = "📚 Precisas de rever a matéria com mais atenção. Continua a empenhar-te!";
+        }
+    }
+
+    function restartGame() {
+        resultScreen.classList.remove('active');
+        startScreen.classList.add('active');
+    }
+</script>
+
+</body>
+</html>
