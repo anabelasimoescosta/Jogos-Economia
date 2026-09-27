@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interativo: Teoria da Comunicação</title>
+    <style>
+        /* Estilos Gerais cheios de cor */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff007f, #7f00ff, #00f0ff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 30px;
+            width: 100%;
+            max-width: 650px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #7f00ff;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        p.description {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        /* Botões Vibrantes */
+        .btn {
+            background: linear-gradient(45deg, #ff007f, #7f00ff);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(127, 0, 255, 0.4);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(127, 0, 255, 0.6);
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+        /* Elementos do Jogo */
+        .progress-container {
+            margin: 20px 0;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 15px;
+            width: 0%;
+            background: linear-gradient(90deg, #00f0ff, #7f00ff);
+            transition: width 0.3s;
+        }
+
+        .status {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .question {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #222;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: #f0f0f0;
+            border: 2px solid #ddd;
+            padding: 14px;
+            font-size: 1.05rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background-color: #e8dbff;
+            border-color: #7f00ff;
+        }
+
+        /* Feedback com as frases pedidas */
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border-radius: 10px;
+            animation: pop 0.3s ease;
+        }
+
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- TELA INICIAL / CAPA -->
+        <div id="start-screen">
+            <h1>Desafio da Comunicação! 💬</h1>
+            <p class="description">
+                Bem-vindo ao jogo interativo de <strong>Teoria da Comunicação</strong> para o 10.º Ano.<br>
+                Testa os teus conhecimentos sobre emissores, recetores, canais, ruídos e as barreiras que afetam o nosso dia a dia!
+            </p>
+            <button class="btn" onclick="startGame()">Iniciar Jogo 🚀</button>
+        </div>
+
+        <!-- TELA DO JOGO -->
+        <div id="game-screen" class="hide">
+            <div class="status">Pergunta <span id="current-q">1</span> de <span id="total-q">12</span></div>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div id="question-text" class="question">Aqui fica a pergunta</div>
+            <div id="options-container" class="options-grid">
+                <!-- Botões gerados via JS -->
+            </div>
+            <div id="feedback-box" class="feedback hide"></div>
+            <button id="next-btn" class="btn hide" onclick="nextQuestion()">Próxima Pergunta ➡️</button>
+        </div>
+
+        <!-- TELA FINAL -->
+        <div id="end-screen" class="hide">
+            <h1>Fim do Jogo! 🎉</h1>
+            <p class="description" id="final-score">Pontuação final</p>
+            <button class="btn" onclick="restartGame()">Jogar Novamente 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        // Banco de 12 perguntas equilibradas com base no documento fornecido
+        const quizData = [
+            {
+                question: "Pôr em comum ideias, hábitos, culturas e valores significa:",
+                options: ["Apenas transmitir dados informativos", "Comunicar", "Excluir indivíduos pretensiosos", "Emitir ruído organizacional"],
+                answer: 1
+            },
+            {
+                question: "Verdadeiro ou Falso? O silêncio não pode ser considerado uma forma de comunicação.",
+                options: ["Verdadeiro", "Fals0"],
+                answer: 1
+            },
+            {
+                question: "No processo de comunicação, o papel do 'Descodificador' cabe ao:",
+                options: ["Emissor", "Canal", "Recetor", "Feedback"],
+                answer: 2
+            },
+            {
+                question: "O suporte físico indispensável à transmissão da mensagem, que liga o emissor ao recetor, chama-se:",
+                options: ["Código", "Contexto", "Canal", "Ruído"],
+                answer: 2
+            },
+            {
+                question: "Se o emissor e o recetor estiverem a falar frente a frente, qual é o canal natural utilizado?",
+                options: ["O Ar", "A escrita", "O código verbal", "A mímica facial"],
+                answer: 0
+            },
+            {
+                question: "A fala e a escrita são exemplos de que tipo de código?",
+                options: ["Código Não Verbal", "Código Verbal", "Código Tecnológico", "Código Sensorial"],
+                answer: 1
+            },
+            {
+                question: "Qual o elemento que permite ao emissor avaliar a eficácia da mensagem e corrigi-la se necessário?",
+                options: ["O Ruído", "O Contexto", "O Feedback (mensagem de retorno)", "A Descodificação"],
+                answer: 2
+            },
+            {
+                question: "Na história do aniversário, qual foi a barreira que originou o mal-entendido (receber uma balança em vez de um carro)?",
+                options: ["Excesso de vocabulário técnico", "Problema na descodificação da pista pelo recetor", "Falta de credibilidade do emissor", "O uso de linguagem não verbal"],
+                answer: 1
+            },
+            {
+                question: "Verdadeiro ou Falso? As experiências passadas do recetor podem fazê-lo desconfiar e interpretar mal uma ocorrência atual.",
+                options: ["Verdadeiro", "Fals0"],
+                answer: 0
+            },
+            {
+                question: "Se usar um vocabulário excessivamente técnico na empresa, o que pode acontecer?",
+                options: ["Melhora o feedback imediato", "Ajuda na mímica e expressão facial", "Tende a excluir pessoas e o emissor parecer pretensioso", "Elimina os ruídos do canal"],
+                answer: 2
+            },
+            {
+                question: "Em França e na Bélgica, o gesto de «OK» pode significar algo muito diferente dos países anglófonos. O que significa?",
+                options: ["Dinheiro ou suborno", "Uma ameaça obscena", "«Zero» ou «nada»", "Um elogio ao empregado"],
+                answer: 2
+            },
+            {
+                question: "Verdadeiro ou Falso? As emoções (como raiva ou alegria) que dominam o emissor não influenciam a interpretação da mensagem.",
+                options: ["Verdadeiro", "Fals0"],
+                answer: 1
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hide');
+            document.getElementById('game-screen').classList.remove('hide');
+            document.getElementById('end-screen').classList.add('hide');
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('total-q').innerText = quizData.length;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            let currentQuestion = quizData[currentQuestionIndex];
+            
+            // Progresso e Contador
+            document.getElementById('current-q').innerText = currentQuestionIndex + 1;
+            let progressPercent = ((currentQuestionIndex) / quizData.length) * 100;
+            document.getElementById('progress-bar').style.width = progressPercent + '%';
+
+            // Texto da pergunta
