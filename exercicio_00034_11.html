@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio da Comunicação - Jogo Interativo 10º Ano</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code Library CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 40%, #d946ef 70%, #f43f5e 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+        }
+
+        .btn-interactive {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-interactive:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-interactive:active:not(:disabled) {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        .pulse-slow {
+            animation: pulseSlow 3s infinite ease-in-out;
+        }
+
+        @keyframes pulseSlow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-3 sm:p-6 min-h-screen text-gray-800">
+
+    <div class="w-full max-w-3xl rounded-3xl glass-card overflow-hidden my-auto transition-all duration-300">
+        
+        <!-- ================= ECRÃ INICIAL / CAPA ================= -->
+        <div id="screen-start" class="p-6 sm:p-10 text-center fade-in">
+            <div class="inline-block p-5 bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 rounded-3xl text-white mb-6 shadow-xl pulse-slow">
+                <i class="fa-solid fa-comments text-5xl sm:text-6xl"></i>
+            </div>
+            
+            <div class="inline-block px-4 py-1.5 bg-purple-100 text-purple-700 font-extrabold rounded-full text-xs sm:text-sm tracking-wider uppercase mb-3 border border-purple-200">
+                Jogo Pedagógico • 10.º Ano
+            </div>
+
+            <h1 class="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 mb-4 leading-tight">
+                O Mundo da Comunicação
+            </h1>
+            
+            <p class="text-gray-600 text-sm sm:text-base mb-8 max-w-xl mx-auto leading-relaxed">
+                Testa os teus conhecimentos sobre os <strong class="text-purple-700">Elementos da Comunicação</strong> (Emissor, Recetor, Canal, Código, Contexto, Feedback), <strong class="text-pink-600">Ruído</strong> e as <strong class="text-indigo-600">Barreiras à Comunicação</strong>!
+            </p>
+
+            <div class="grid grid-cols-3 gap-3 max-w-lg mx-auto mb-8 text-center text-xs sm:text-sm font-semibold">
+                <div class="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-amber-800 shadow-sm">
+                    <i class="fa-solid fa-list-check block text-2xl mb-1 text-amber-500"></i>
+                    12 Questões
+                </div>
+                <div class="p-3 bg-pink-50 rounded-2xl border border-pink-200 text-pink-800 shadow-sm">
+                    <i class="fa-solid fa-bolt block text-2xl mb-1 text-pink-500"></i>
+                    V/F e Escolha
+                </div>
+                <div class="p-3 bg-purple-50 rounded-2xl border border-purple-200 text-purple-800 shadow-sm">
+                    <i class="fa-solid fa-trophy block text-2xl mb-1 text-purple-500"></i>
+                    Feedback Direto
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="btn-interactive w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:from-amber-600 hover:to-purple-700 text-white font-black text-xl rounded-2xl shadow-xl transition-all cursor-pointer flex items-center justify-center gap-3 mx-auto">
+                <i class="fa-solid fa-play text-2xl"></i> INICIAR JOGO
+            </button>
+        </div>
+
+        <!-- ================= ECRÃ DE JOGO / PERGUNTAS ================= -->
+        <div id="screen-quiz" class="p-5 sm:p-8 hidden fade-in">
+            <!-- Barra Superior de Progresso -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2 font-black text-xs sm:text-sm text-gray-700">
+                    <span id="question-tracker" class="bg-indigo-100 text-indigo-800 px-3.5 py-1.5 rounded-full border border-indigo-200">
+                        Questão 1 de 12
+                    </span>
+                    <span id="score-tracker" class="text-pink-600 bg-pink-50 px-3.5 py-1.5 rounded-full border border-pink-200">
+                        Pontuação: 0
+                    </span>
+                </div>
+                <!-- Barra de Progresso Gradiente -->
+                <div class="w-full bg-gray-200 h-3.5 rounded-full overflow-hidden p-0.5 border border-gray-300">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 rounded-full transition-all duration-500 w-0"></div>
+                </div>
+            </div>
+
+            <!-- Cartão da Pergunta -->
+            <div class="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border-2 border-purple-100 rounded-2xl p-5 sm:p-6 mb-6 shadow-sm">
+                <span id="question-type" class="inline-block text-xs font-black text-purple-600 uppercase tracking-wider mb-1">
+                    Escolha Múltipla
+                </span>
+                <h2 id="question-text" class="text-base sm:text-xl font-bold text-gray-800 leading-snug">
+                    A carregar a pergunta...
+                </h2>
+            </div>
+
+            <!-- Opções de Resposta -->
+            <div id="options-container" class="grid grid-cols-1 gap-3 mb-6">
+                <!-- As opções serão inseridas dinamicamente via JavaScript -->
+            </div>
+
+            <!-- Caixa de Feedback (Aparece após responder) -->
+            <div id="feedback-card" class="hidden p-5 rounded-2xl mb-6 text-center border-2 fade-in shadow-md">
+                <h3 id="feedback-title" class="text-2xl font-black mb-2"></h3>
+                <p id="feedback-explanation" class="text-sm sm:text-base leading-relaxed font-medium"></p>
+            </div>
+
+            <!-- Botão Próxima Pergunta -->
+            <button id="next-btn" onclick="nextQuestion()" class="hidden btn-interactive w-full py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-black text-lg rounded-2xl shadow-lg cursor-pointer">
+                CONTINUAR <i class="fa-solid fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+
+        <!-- ================= ECRÃ FINAL / RESULTADOS ================= -->
+        <div id="screen-result" class="p-6 sm:p-10 text-center hidden fade-in">
+            <div class="inline-block p-4 bg-amber-100 text-amber-600 rounded-3xl mb-4 shadow-md">
+                <i class="fa-solid fa-award text-5xl sm:text-6xl"></i>
+            </div>
+
+            <h2 class="text-3xl sm:text-4xl font-black text-gray-800 mb-1">Desafio Concluído!</h2>
+            <p class="text-gray-600 text-sm sm:text-base mb-6">Aqui está o teu resultado final no jogo da Comunicação:</p>
+
+            <div class="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 rounded-3xl border-2 border-purple-100 mb-8 max-w-md mx-auto shadow-sm">
+                <div class="text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-1" id="final-score">
+                    0 / 12
+                </div>
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1" id="final-percentage">0% de Sucesso</div>
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Respostas Corretas</div>
+                <p id="final-message" class="text-gray-700 font-semibold text-sm sm:text-base leading-relaxed"></p>
+            </div>
+
+            <!-- Secção do QR Code -->
+            <div class="bg-white p-5 rounded-2xl border-2 border-gray-100 mb-8 max-w-sm mx-auto shadow-sm flex flex-col items-center">
+                <h3 class="font-extrabold text-gray-800 text-sm mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-qrcode text-purple-600 text-lg"></i> Partilha o Jogo
+                </h3>
+                <p class="text-xs text-gray-500 mb-4">Aponta a câmara do telemóvel para jogares em qualquer dispositivo!</p>
+                <div id="qrcode-container" class="bg-white p-3 rounded-xl border border-gray-200 shadow-inner"></div>
+            </div>
+
+            <button onclick="startGame()" class="btn-interactive px-8 py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-black text-lg rounded-2xl shadow-xl cursor-pointer inline-flex items-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i> JOGAR NOVAMENTE
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Banco exato de 12 Perguntas baseadas no programa do 10º Ano (SEM o sinal de OK)
+        const questions = [
+            {
+                type: "Escolha Múltipla",
+                question: "Etimologicamente, qual é o significado original do verbo 'comunicar'?",
+                options: [
+                    "Transmitir ordens obrigatórias sem direito a resposta.",
+                    "Pôr em comum, partilhando ideias, sentimentos, valores e cultura.",
+                    "Falar sozinho em público sem utilizar um canal.",
+                    "Escrever mensagens exclusivamente através de meios digitais."
+                ],
+                correct: 1,
+                explanation: "O termo 'comunicar' vem do latim 'communicare', que significa pôr em comum, estabelecer uma relação de partilha mútua."
+            },
+            {
+                type: "Verdadeiro / Falso",
+                question: "A célebre afirmação 'Não podemos não comunicar' significa que até o silêncio, a postura física e o olhar transmitem uma mensagem.",
+                options: ["Verdadeiro", "Falso"],
+                correct: 0,
+                explanation: "Verdadeiro! Mesmo quando estamos em silêncio ou parados, o nosso corpo e atitude continuam a comunicar algo aos outros."
+            },
+            {
+                type: "Escolha Múltipla",
+                question: "Qual é o elemento do processo comunicativo que permite ao Emissor confirmar se a mensagem foi compreendida pelo Recetor?",
+                options: [
+                    "Canal",
+                    "Código",
+                    "Feedback (Mensagem de retorno)",
+                    "Contexto"
+                ],
+                correct: 2,
+                explanation: "O Feedback é a resposta emitida pelo recetor que indica ao emissor se a mensagem foi recebida e entendida com sucesso."
+            },
+            {
+                type: "Escolha Múltipla",
+                question: "Qual das seguintes opções apresenta um Canal Tecnológico e um Código Não-Verbal, respetivamente?",
+                options: [
+                    "Ar / Voz humana falada",
+                    "Telemóvel / Gestos e expressões faciais",
+                    "Livro em papel / Língua Portuguesa escrita",
+                    "Ouvido humano / Palavras faladas"
+                ],
+                correct: 1,
+                explanation: "O telemóvel é um meio tecnológico (canal) e os gestos são sinais que não utilizam palavras faladas ou escritas (código não-verbal)."
+            },
+            {
+                type: "Verdadeiro / Falso",
+                question: "O termo 'Ruído' na comunicação refere-se unicamente a barulhos sonoros intensos no ambiente físico envolvente.",
+                options: ["Verdadeiro", "Falso"],
+                correct: 1,
+                explanation: "Falso! Ruído é QUALQUER perturbação (física, psicológica, emocional ou técnica) que interfira na perceção da mensagem."
+            },
+            {
+                type: "Escolha Múltipla",
+                question: "As experiências passadas do recetor em relação ao emissor podem funcionar como uma barreira à comunicação quando:",
+                options: [
+                    "Facilitam a compreensão imediata do canal utilizado.",
+                    "Criam desconfiança ou preconceito, fazendo o recetor rejeitar ou distorcer a mensagem.",
+                    "Aumentam a velocidade de transmissão da voz do emissor.",
+                    "Transformam o código não-verbal em código verbal automaticamente."
+                ],
+                correct: 1,
+                explanation: "Experiências anteriores negativas podem criar resistências e preconceitos no recetor, bloqueando a boa recetividade da mensagem."
+            },
+            {
+                type: "Escolha Múltipla",
+                question: "Um orador utiliza vocabulário extremamente técnico e erudito numa palestra para jovens. Que barreira comunicativa está a ocorrer?",
+                options: [
+                    "Ruído natural do canal de ar.",
+                    "Uso de linguagem inacessível ao recetor, podendo provocar exclusão ou desinteresse.",
+                    "Ausência de canal tecnológico adequado.",
+                    "Feedback imediato excessivo."
+                ],
+                correct: 1,
+                explanation: "O uso de vocabulário demasiado técnico afasta os recetores e pode fazer o emissor parecer distante ou pretensioso."
+            },
+            {
+                type: "Escolha Múltipla",
+                question: "Para que a comunicação ocorra com sucesso, o Recetor precisa de realizar o processo de Descodificação, que consiste em:",
+                options: [
+                    "Transformar pensamentos em símbolos gráficos no papel.",
+                    "Interpretar e traduzir os sinais e o código recebidos para compreender a mensagem.",
+                    "Eliminar fisicamente todo o ruído do ambiente.",
+                    "Enviar uma nova mensagem através de um canal tecnológico."
+                ],
+                correct: 1,
+                explanation: "A descodificação é a operação feita pelo recetor para interpretar os sinais codificados enviados pelo emissor."
+            },
+            {
+                type: "Escolha Múltipla",
+                question: "Quando o recetor recebe uma quantidade exagerada de informação num curto espaço de tempo, que barreira se manifesta?",
+                options: [
+                    "Excesso de informação (sobrecarga cognitiva), que impede a assimilação de dados essenciais.",
+                    "Falta de canal de transmissão.",
+                    "Incompatibilidade de código alfabético.",
+                    "Inexistência de emissor."
+                ],
+                correct: 0,
+                explanation: "O excesso de informação satura a capacidade do recetor, fazendo com que este perca os pontos essenciais da mensagem."
+            },
+            {
+                type: "Escolha Múltipla",
+                question: "A credibilidade atribuída ao Emissor influencia a comunicação porque:",
+                options: [
+                    "O recetor tende a aceitar e valorizar mais a mensagem se confiar na fonte.",
+                    "Altera o canal de transmissão de natural para tecnológico.",
+                    "Elimina automaticamente todo o ruído do ambiente.",
+                    "Substitui a necessidade de usar um código compreensível."
+                ],
+                correct: 0,
+                explanation: "A confiança e a autoridade reconhecidas no emissor aumentam significativamente a recetividade e aceitação do recetor."
+            },
+            {
+                type: "Verdadeiro / Falso",
+                question: "O estado emocional em que o emissor ou o recetor se encontram (ex: raiva, ansiedade, tristeza) altera a forma como a mensagem é transmitida e interpretada.",
+                options: ["Verdadeiro", "Falso"],
+                correct: 0,
+                explanation: "Verdadeiro! As emoções fortes atuam como um filtro que altera o tom de voz, a linguagem e a interpretação das palavras."
+            },
+            {
+                type: "Escolha Múltipla",
+                question: "Escolher o momento oportuno para comunicar é crucial porque:",
+                options: [
+                    "Evita recetores distraídos, cansados ou indispostos, garantindo melhor recetividade.",
+                    "Garante que o canal seja sempre tecnológico e digital.",
+                    "Substitui o feedback por código não-verbal.",
+                    "Impede a formação de ruídos sonoros na sala."
+                ],
+                correct: 0,
+                explanation: "Transmitir uma mensagem no momento errado (quando o outro está cansado ou apressado) reduz drasticamente a eficácia da comunicação."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function startGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            answered = false;
+
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+
+            showQuestion();
+        }
+
+        function showQuestion() {
+            answered = false;
+            const q = questions[currentQuestionIndex];
+
+            // Atualizar contadores e barra de progresso
+            document.getElementById('question-tracker').innerText = `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
+            document.getElementById('score-tracker').innerText = `Pontuação: ${score}`;
+            const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            // Ocultar feedback e botão "Continuar"
+            document.getElementById('feedback-card').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+
+            // Preencher pergunta
+            document.getElementById('question-type').innerText = q.type;
+            document.getElementById('question-text').innerText = q.question;
+
+            // Gerar botões de opção
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-interactive w-full text-left p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-purple-400 font-semibold text-gray-700 transition-all duration-200 cursor-pointer flex items-center gap-3.5 shadow-sm';
+                btn.innerHTML = `
+                    <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 font-extrabold flex items-center justify-center shrink-0 text-sm border border-purple-200">
+                        ${String.fromCharCode(65 + idx)}
+                    </span>
+                    <span class="text-sm sm:text-base">${opt}</span>
+                `;
+                btn.onclick = () => selectOption(idx);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+            answered = true;
+
+            const q = questions[currentQuestionIndex];
+            const optionsBtns = document.getElementById('options-container').children;
+            const feedbackCard = document.getElementById('feedback-card');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackExp = document.getElementById('feedback-explanation');
+
+            // Desativar interatividade das opções
+            for (let i = 0; i < optionsBtns.length; i++) {
+                optionsBtns[i].disabled = true;
+                optionsBtns[i].classList.remove('btn-interactive', 'hover:border-purple-400');
+            }
+
+            // Verificar se acertou ou errou
+            if (selectedIndex === q.correct) {
+                score++;
+                document.getElementById('score-tracker').innerText = `Pontuação: ${score}`;
+
+                // Estilo Opção Correta
+                optionsBtns[selectedIndex].classList.remove('border-gray-200', 'bg-white');
+                optionsBtns[selectedIndex].classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900', 'ring-2', 'ring-emerald-400');
+
+                // Caixa de Feedback VERDE com a palavra exata "PARABÉNS"
+                feedbackCard.className = "p-5 rounded-2xl mb-6 text-center border-2 border-emerald-400 bg-emerald-50 text-emerald-950 fade-in shadow-sm";
+                feedbackTitle.className = "text-2xl font-black mb-1 text-emerald-600 flex items-center justify-center gap-2";
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-check"></i> PARABÉNS`;
+                feedbackExp.innerText = q.explanation;
+            } else {
+                // Estilo Opção Errada
+                optionsBtns[selectedIndex].classList.remove('border-gray-200', 'bg-white');
+                optionsBtns[selectedIndex].classList.add('border-rose-500', 'bg-rose-50', 'text-rose-900');
+
+                // Destacar opção que era correta
+                optionsBtns[q.correct].classList.remove('border-gray-200', 'bg-white');
+                optionsBtns[q.correct].classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+
+                // Caixa de Feedback VERMELHA com a frase exata "Está mais atento(a) nas aulas"
+                feedbackCard.className = "p-5 rounded-2xl mb-6 text-center border-2 border-rose-400 bg-rose-50 text-rose-950 fade-in shadow-sm";
+                feedbackTitle.className = "text-2xl font-black mb-1 text-rose-600 flex items-center justify-center gap-2";
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Está mais atento(a) nas aulas`;
+                feedbackExp.innerText = `A resposta correta era a opção ${String.fromCharCode(65 + q.correct)}. ${q.explanation}`;
+            }
+
+            feedbackCard.classList.remove('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                showFinalResults();
+            }
+        }
+
+        function showFinalResults() {
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            const scoreDisplay = document.getElementById('final-score');
+            const percentageDisplay = document.getElementById('final-percentage');
+            const messageDisplay = document.getElementById('final-message');
+
+            const percentage = Math.round((score / questions.length) * 100);
+
+            scoreDisplay.innerText = `${score} / ${questions.length}`;
+            percentageDisplay.innerText = `${percentage}% de Sucesso`;
+
+            // Mensagem pedagógica consoante o resultado
+            if (score === 12) {
+                messageDisplay.innerText = "PARABÉNS! Excelente desempenho! Dominas perfeitamente todos os conceitos da Comunicação e as suas Barreiras!";
+            } else if (score >= 9) {
+                messageDisplay.innerText = "Muito bom trabalho! Tens um ótimo conhecimento sobre os elementos da comunicação e as barreiras!";
+            } else if (score >= 6) {
+                messageDisplay.innerText = "Bom esforço! Já dominas vários conceitos, mas vale a pena rever as matérias em que tiveste dúvidas!";
+            } else {
+                messageDisplay.innerText = "Está mais atento(a) nas aulas! Revisa os conceitos de Emissor, Código e Barreiras para melhorares no próximo desafio!";
+            }
+
+            // Gerar QR Code do URL atual para partilha fácil
+            const qrContainer = document.getElementById('qrcode-container');
+            qrContainer.innerHTML = '';
+            
+            try {
+                new QRCode(qrContainer, {
+                    text: window.location.href || "https://desafio-comunicacao-10ano.edu",
+                    width: 128,
+                    height: 128,
+                    colorDark : "#4f46e5",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            } catch(e) {
+                qrContainer.innerHTML = '<p class="text-xs text-gray-400">QR Code indisponível em modo local sem rede.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
