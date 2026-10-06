@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desafio da Dinâmica de Grupo — 10.º Ano</title>
+<style>
+*{box-sizing:border-box} body{margin:0;min-height:100vh;font-family:"Trebuchet MS",Arial,sans-serif;color:#24304a;background:linear-gradient(135deg,#5b5be7,#9b5de5,#f15bb5,#fee440)}
+.screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+.card{width:min(920px,100%);background:rgba(255,255,255,.96);border-radius:30px;box-shadow:0 20px 55px rgba(33,24,90,.25);padding:34px}
+.cover{text-align:center;position:relative;overflow:hidden}.cover:before,.cover:after{content:"";position:absolute;border-radius:50%;opacity:.2;z-index:0}.cover:before{width:270px;height:270px;background:#fee440;left:-100px;top:-110px}.cover:after{width:320px;height:320px;background:#00bbf9;right:-140px;bottom:-140px}.content{position:relative;z-index:1}
+.badge{display:inline-block;padding:8px 16px;border-radius:999px;background:#fff0a8;color:#6a4b00;font-weight:900}
+h1{font-size:clamp(2.2rem,6vw,4.2rem);margin:18px 0 10px;line-height:1.05;color:#5438d4}.subtitle{font-size:1.2rem;margin:0 auto 22px;max-width:700px}.scene{margin:25px auto;max-width:700px;border-radius:24px;padding:20px;background:linear-gradient(120deg,#dff9ff,#f3e8ff,#fff1d8);font-size:3.1rem;letter-spacing:10px}
+.small{color:#667085;font-size:.95rem}button{border:0;border-radius:16px;padding:14px 24px;font-size:1.05rem;font-weight:800;cursor:pointer;transition:.18s;font-family:inherit}button:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(50,40,100,.18)}
+.start{background:linear-gradient(90deg,#6c63ff,#ff4fa3);color:white;padding:16px 34px;font-size:1.2rem}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:15px}.counter{font-weight:900;color:#5438d4}.score{background:#fff0f7;padding:9px 14px;border-radius:999px;font-weight:900}
+.progress-wrap{height:14px;background:#ececf7;border-radius:999px;overflow:hidden;margin:10px 0 25px}.progress{height:100%;background:linear-gradient(90deg,#22c1c3,#7c5cff,#ff4fa3);transition:width .3s}
+.type{display:inline-block;padding:7px 12px;border-radius:10px;background:#e9f8ff;color:#087da5;font-weight:900}.question{font-size:1.45rem;line-height:1.35;margin:18px 0 22px}.options{display:grid;gap:13px}
+.option{text-align:left;background:white;border:3px solid #e8e7f5;color:#24304a}.option:hover{border-color:#8a7cff;background:#f8f7ff}.option.correct{border-color:#19a974;background:#e7fff3}.option.wrong{border-color:#ef476f;background:#fff0f3}
+.feedback{margin-top:22px;padding:17px 18px;border-radius:18px;font-weight:900;display:none}.feedback.ok{display:block;background:#dcfce7;color:#117a4b}.feedback.no{display:block;background:#ffe4ea;color:#b4234d}.explanation{margin-top:9px;font-weight:500}
+.next{margin-top:18px;background:#5438d4;color:white;display:none}.result{text-align:center}.final-score{font-size:4rem;font-weight:1000;color:#5438d4;margin:10px}.stars{font-size:2.5rem;letter-spacing:7px}.restart{background:#ff4fa3;color:white}
+@media(max-width:600px){.card{padding:22px;border-radius:22px}.question{font-size:1.2rem}.top{align-items:flex-start;flex-direction:column}.scene{font-size:2.2rem;letter-spacing:5px}}
+</style>
+</head>
+<body><div id="app"></div>
+<script>
+const questions=[{&quot;type&quot;: &quot;mc&quot;, &quot;q&quot;: &quot;Numa turma, um aluno começa a participar mais porque observa os colegas a participar. Que fenómeno está principalmente presente?&quot;, &quot;options&quot;: [&quot;Padrão de grupo&quot;, &quot;Influência social&quot;, &quot;Motivação individual&quot;, &quot;Norma social&quot;], &quot;answer&quot;: 1, &quot;explanation&quot;: &quot;A influência social ocorre quando os pensamentos, atitudes ou comportamentos de uma pessoa são afetados pela presença ou ação de outras pessoas.&quot;}, {&quot;type&quot;: &quot;tf&quot;, &quot;q&quot;: &quot;O papel social corresponde à função ou posição que cada pessoa assume dentro de um grupo.&quot;, &quot;options&quot;: [&quot;Verdadeiro&quot;, &quot;Falso&quot;], &quot;answer&quot;: 0, &quot;explanation&quot;: &quot;Verdadeiro. Os papéis ajudam a definir a função de cada membro no grupo.&quot;}, {&quot;type&quot;: &quot;mc&quot;, &quot;q&quot;: &quot;Num trabalho de grupo, uma aluna organiza as tarefas e distribui o trabalho pelos colegas. Qual é o papel que melhor descreve a sua atuação?&quot;, &quot;options&quot;: [&quot;Mediador&quot;, &quot;Porta-voz&quot;, &quot;Organizador&quot;, &quot;Observador&quot;], &quot;answer&quot;: 2, &quot;explanation&quot;: &quot;O organizador distribui tarefas e contribui para estruturar o trabalho do grupo.&quot;}, {&quot;type&quot;: &quot;tf&quot;, &quot;q&quot;: &quot;As normas sociais existem apenas quando estão escritas e são formalmente comunicadas aos membros do grupo.&quot;, &quot;options&quot;: [&quot;Verdadeiro&quot;, &quot;Falso&quot;], &quot;answer&quot;: 1, &quot;explanation&quot;: &quot;Falso. As normas sociais podem ser explícitas ou implícitas e orientam o comportamento dos membros do grupo.&quot;}, {&quot;type&quot;: &quot;mc&quot;, &quot;q&quot;: &quot;Qual destas situações representa melhor um comportamento facilitador do funcionamento de uma equipa?&quot;, &quot;options&quot;: [&quot;Interromper constantemente os colegas&quot;, &quot;Recusar ideias diferentes das nossas&quot;, &quot;Ouvir os colegas e cooperar na resolução de problemas&quot;, &quot;Deixar as tarefas para os outros&quot;], &quot;answer&quot;: 2, &quot;explanation&quot;: &quot;Escuta ativa, cooperação e respeito são comportamentos facilitadores.&quot;}, {&quot;type&quot;: &quot;tf&quot;, &quot;q&quot;: &quot;Um grupo que valoriza a cooperação e a partilha de responsabilidades apresenta um padrão de funcionamento mais democrático e participativo.&quot;, &quot;options&quot;: [&quot;Verdadeiro&quot;, &quot;Falso&quot;], &quot;answer&quot;: 0, &quot;explanation&quot;: &quot;Verdadeiro. O padrão de grupo corresponde à forma habitual como os membros interagem e se comportam em conjunto.&quot;}, {&quot;type&quot;: &quot;mc&quot;, &quot;q&quot;: &quot;Qual das seguintes situações tende a diminuir a motivação individual de um membro de uma equipa?&quot;, &quot;options&quot;: [&quot;Reconhecimento do trabalho realizado&quot;, &quot;Objetivos claros&quot;, &quot;Bom relacionamento com os colegas&quot;, &quot;Falta de reconhecimento&quot;], &quot;answer&quot;: 3, &quot;explanation&quot;: &quot;A falta de reconhecimento é um dos fatores identificados como podendo diminuir a motivação.&quot;}, {&quot;type&quot;: &quot;tf&quot;, &quot;q&quot;: &quot;A motivação individual influencia diretamente o envolvimento, a produtividade e a satisfação dos membros do grupo.&quot;, &quot;options&quot;: [&quot;Verdadeiro&quot;, &quot;Falso&quot;], &quot;answer&quot;: 0, &quot;explanation&quot;: &quot;Verdadeiro. A motivação individual influencia o envolvimento, a produtividade e a satisfação.&quot;}, {&quot;type&quot;: &quot;mc&quot;, &quot;q&quot;: &quot;Uma equipa de cozinha tem um jantar para 80 hóspedes e dois elementos não realizaram as tarefas atribuídas. Qual deve ser uma das primeiras ações da equipa?&quot;, &quot;options&quot;: [&quot;Ignorar o problema até ao final do serviço&quot;, &quot;Identificar as tarefas que ficaram por realizar e perceber a causa&quot;, &quot;Culpar imediatamente os colegas&quot;, &quot;Distribuir todas as tarefas apenas pelo chefe&quot;], &quot;answer&quot;: 1, &quot;explanation&quot;: &quot;A solução proposta no material começa por identificar o problema e perceber o que aconteceu, antes de reorganizar o trabalho.&quot;}, {&quot;type&quot;: &quot;tf&quot;, &quot;q&quot;: &quot;Quando dois elementos não cumprem as suas tarefas, a melhor solução é evitar a comunicação para não aumentar os conflitos.&quot;, &quot;options&quot;: [&quot;Verdadeiro&quot;, &quot;Falso&quot;], &quot;answer&quot;: 1, &quot;explanation&quot;: &quot;Falso. O material destaca a comunicação clara e respeitosa, a escuta das razões dos colegas e a comunicação assertiva.&quot;}, {&quot;type&quot;: &quot;mc&quot;, &quot;q&quot;: &quot;Qual é uma das funções das normas sociais dentro de um grupo?&quot;, &quot;options&quot;: [&quot;Eliminar todas as diferenças entre os membros&quot;, &quot;Reduzir conflitos e definir expectativas de comportamento&quot;, &quot;Escolher sempre um único líder&quot;, &quot;Impedir a participação dos membros&quot;], &quot;answer&quot;: 1, &quot;explanation&quot;: &quot;As normas sociais ajudam a definir expectativas de comportamento, promover a organização, facilitar a convivência e reduzir conflitos.&quot;}, {&quot;type&quot;: &quot;mc&quot;, &quot;q&quot;: &quot;Depois de reorganizar as tarefas de uma equipa para conseguir realizar um evento, qual é uma atitude adequada para melhorar o funcionamento futuro?&quot;, &quot;options&quot;: [&quot;Não voltar a falar sobre o que aconteceu&quot;, &quot;Avaliar posteriormente o resultado e pensar no que pode ser melhorado&quot;, &quot;Retirar todas as responsabilidades aos elementos da equipa&quot;, &quot;Evitar estabelecer novos prazos&quot;], &quot;answer&quot;: 1, &quot;explanation&quot;: &quot;Depois do evento, a equipa deve avaliar o que correu bem e o que pode ser melhorado, para evitar que a situação se repita.&quot;}];
+let current=0,score=0,answered=false;
+const app=document.getElementById("app");
+
+function showCover(){
+app.innerHTML=`<div class="screen"><div class="card cover"><div class="content">
+<span class="badge">🎯 DESAFIO — 10.º ANO</span>
+<h1>Dinâmica de Grupo</h1>
+<p class="subtitle">Influência social • papéis • normas • comportamentos • padrão de grupo • motivação • trabalho em equipa</p>
+<div class="scene">👥 🧠 💬 🤝 🎯 🏨</div>
+<p><strong>Estás preparado(a) para testar o que aprendeste?</strong></p>
+<p class="small">12 desafios • Verdadeiro/Falso + Escolha Múltipla • feedback imediato</p>
+<button class="start" onclick="startGame()">🚀 COMEÇAR O DESAFIO</button>
+</div></div></div>`;
+}
+function startGame(){current=0;score=0;answered=false;renderQuestion()}
+function renderQuestion(){
+const q=questions[current], progress=(current/questions.length)*100;
+const typeLabel=q.type==="tf"?"VERDADEIRO OU FALSO":"ESCOLHA MÚLTIPLA";
+app.innerHTML=`<div class="screen"><div class="card">
+<div class="top"><div class="counter">QUESTÃO ${current+1} de ${questions.length}</div><div class="score">⭐ Pontos: ${score}</div></div>
+<div class="progress-wrap"><div class="progress" style="width:${progress}%"></div></div>
+<span class="type">${typeLabel}</span><div class="question">${q.q}</div>
+<div class="options">${q.options.map((opt,i)=>`<button class="option" onclick="answer(${i})">${opt}</button>`).join("")}</div>
+<div id="feedback" class="feedback"></div>
+<button id="next" class="next" onclick="nextQuestion()">➡️ ${current===questions.length-1?"VER RESULTADO":"PRÓXIMA QUESTÃO"}</button>
+</div></div>`;
+}
+function answer(index){
+if(answered)return;answered=true;const q=questions[current],buttons=document.querySelectorAll(".option");
+buttons.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add("correct");if(i===index&&i!==q.answer)b.classList.add("wrong")});
+const feedback=document.getElementById("feedback");
+if(index===q.answer){score++;feedback.className="feedback ok";feedback.innerHTML=`🎉 <strong>PARABÉNS</strong><div class="explanation">${q.explanation}</div>`}
+else{feedback.className="feedback no";feedback.innerHTML=`👀 <strong>Está mais atento(a) nas aulas.</strong><div class="explanation">${q.explanation}</div>`}
+document.querySelector(".score").textContent=`⭐ Pontos: ${score}`;document.getElementById("next").style.display="inline-block";
+}
+function nextQuestion(){current++;answered=false;if(current>=questions.length)showResult();else renderQuestion()}
+function showResult(){
+const percent=Math.round(score/questions.length*100);let message="",stars="";
+if(percent>=90){message="Excelente! Dominas muito bem estes conteúdos.";stars="⭐⭐⭐⭐⭐"}
+else if(percent>=70){message="Muito bem! Tens bons conhecimentos. Continua a estudar.";stars="⭐⭐⭐⭐"}
+else if(percent>=50){message="Bom esforço! Revê alguns conteúdos e tenta novamente.";stars="⭐⭐⭐"}
+else{message="Precisas de rever os conteúdos das aulas. Na próxima tentativa será melhor!";stars="⭐⭐"}
+app.innerHTML=`<div class="screen"><div class="card result"><span class="badge">🏁 DESAFIO CONCLUÍDO</span>
+<h1>Resultado final</h1><div class="stars">${stars}</div><div class="final-score">${score} / ${questions.length}</div>
+<p><strong>${percent}% de respostas certas</strong></p><p class="subtitle">${message}</p>
+<div class="scene">🎉 👥 🤝 🧠 🏆</div><button class="restart" onclick="startGame()">🔄 JOGAR NOVAMENTE</button>
+</div></div>`;
+}
+showCover();
+</script></body></html>
