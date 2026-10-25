@@ -1,0 +1,419 @@
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desafio Agente de Turismo | 10.º ano</title>
+<style>
+:root {
+  --navy: #17324d;
+  --teal: #19a7a0;
+  --gold: #ffca58;
+  --ink: #203040;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg, #e7f7f5, #fff4df);
+  color: var(--ink);
+}
+main { max-width: 940px; margin: auto; padding: 22px; }
+.hero {
+  background: var(--navy); color: white; border-radius: 24px;
+  padding: 28px; box-shadow: 0 10px 25px #17324d25;
+}
+.kicker {
+  text-transform: uppercase; letter-spacing: 2px;
+  font-size: 12px; color: var(--gold); font-weight: bold;
+}
+h1 { font-size: clamp(28px, 5vw, 43px); margin: 8px 0; }
+.hero p { max-width: 650px; line-height: 1.5; }
+.panel {
+  background: white; border-radius: 20px; padding: 24px;
+  margin-top: 18px; box-shadow: 0 6px 20px #17324d12;
+}
+.topline {
+  display: flex; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap; align-items: center;
+}
+.pill {
+  background: #e8f7f5; color: #116d6a; border-radius: 99px;
+  padding: 8px 12px; font-weight: bold; font-size: 13px;
+}
+.progress {
+  height: 9px; background: #e8edf0; border-radius: 20px;
+  overflow: hidden; margin: 16px 0;
+}
+.bar {
+  height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+  transition: width .3s;
+}
+h2 { color: var(--navy); margin: 8px 0 12px; font-size: 25px; }
+.question { font-size: 20px; font-weight: bold; line-height: 1.4; margin: 18px 0; }
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+button {
+  font: inherit; cursor: pointer; border: 0; border-radius: 13px;
+  padding: 14px 16px; transition: transform .12s, background .12s;
+}
+button:hover { transform: translateY(-1px); }
+button:focus { outline: 3px solid #ffca5880; }
+.option {
+  background: #f1f6f8; color: var(--ink); text-align: left;
+  border: 2px solid transparent; min-height: 58px;
+}
+.option:hover { border-color: #83c9c4; background: #effaf8; }
+.option.correct { background: #e0f7e9; border-color: #28a35b; }
+.option.wrong { background: #fff0ef; border-color: #e76f6a; }
+.primary { background: var(--teal); color: white; font-weight: bold; }
+.secondary { background: #eaf0f4; color: var(--navy); font-weight: bold; }
+.feedback {
+  margin-top: 16px; padding: 14px; border-radius: 12px;
+  line-height: 1.45; display: none;
+}
+.feedback.good { display: block; background: #e7f8ed; color: #145b32; }
+.feedback.bad { display: block; background: #fff1e5; color: #8a3f14; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.hidden { display: none !important; }
+.small { font-size: 13px; color: #637585; }
+.center { text-align: center; }
+.scorebig { font-size: 46px; font-weight: bold; color: var(--teal); }
+.resultgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+.stat { background: #f1f8f8; padding: 15px; border-radius: 14px; }
+.stat strong { display: block; font-size: 24px; color: var(--navy); }
+@media (max-width: 600px) {
+  main { padding: 12px; }
+  .hero, .panel { padding: 17px; }
+  .options { grid-template-columns: 1fr; }
+  .resultgrid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<main>
+<header class="hero">
+  <div class="kicker">Marketing e Comunicação em Turismo · 10.º ano</div>
+  <h1>Desafio Agente de Turismo ✈️</h1>
+  <p>Uma missão em 4 etapas para compreender o turista, identificar serviços e criar experiências turísticas responsáveis. Junta-te à tua equipa e soma pontos!</p>
+</header>
+
+<section class="panel" id="intro">
+  <div class="topline">
+    <span class="pill">🎯 Missão de equipa</span>
+    <span class="pill">⏱️ 10–15 minutos</span>
+  </div>
+  <h2>Como jogar?</h2>
+  <ul>
+    <li>Responde a perguntas sobre o mercado e a indústria turística.</li>
+    <li>Distingue as motivações PUSH e PULL.</li>
+    <li>Identifica turistas e excursionistas.</li>
+    <li>Resolve desafios de um profissional de turismo.</li>
+  </ul>
+  <p class="small">Sugestão: jogar individualmente ou projetar no quadro e responder por equipas. Cada resposta correta vale 10 pontos.</p>
+  <button class="primary" onclick="startGame()">Começar o desafio →</button>
+</section>
+
+<section class="panel hidden" id="game">
+  <div class="topline">
+    <span class="pill" id="roundLabel">Etapa 1</span>
+    <span class="pill">⭐ Pontos: <span id="score">0</span></span>
+  </div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div id="play"></div>
+  <div class="feedback" id="feedback" aria-live="polite"></div>
+  <div class="actions">
+    <button class="primary hidden" id="next" onclick="nextQuestion()">Continuar →</button>
+    <button class="secondary" onclick="quitGame()">Sair do jogo</button>
+  </div>
+</section>
+
+<section class="panel hidden center" id="results">
+  <div class="kicker">Missão concluída</div>
+  <h2 id="resultTitle">Parabéns, agente!</h2>
+  <div class="scorebig" id="finalScore">0</div>
+  <p id="resultText"></p>
+  <div class="resultgrid">
+    <div class="stat"><strong id="correctCount">0</strong>respostas corretas</div>
+    <div class="stat"><strong id="totalCount">0</strong>desafios</div>
+    <div class="stat"><strong id="percent">0%</strong>aproveitamento</div>
+  </div>
+  <p><b>Desafio final:</b> explica como um profissional pode adaptar uma proposta turística às necessidades do cliente e reduzir os impactos negativos no destino.</p>
+  <button class="primary" onclick="startGame()">Jogar novamente ↻</button>
+</section>
+</main>
+
+<script>
+const questions = [
+{
+  round: "1 · Mercado turístico",
+  q: "O que é o mercado turístico?",
+  opts: [
+    "Um espaço onde só se vendem bilhetes de avião.",
+    "A relação entre a oferta turística e a procura de produtos e serviços turísticos.",
+    "Um local físico que todos os turistas têm de visitar.",
+    "O conjunto exclusivo de hotéis de um destino."
+  ],
+  a: 1,
+  why: "O mercado turístico relaciona quem procura experiências turísticas com quem disponibiliza produtos e serviços."
+},
+{
+  round: "1 · Mercado turístico",
+  q: "Qual destas opções é um exemplo de oferta turística?",
+  opts: [
+    "Uma família que quer passar férias.",
+    "O desejo de conhecer monumentos.",
+    "Um hotel, um restaurante e uma visita guiada disponíveis num destino.",
+    "O rendimento mensal de um visitante."
+  ],
+  a: 2,
+  why: "A oferta corresponde aos bens, serviços, recursos e infraestruturas disponibilizados aos visitantes."
+},
+{
+  round: "1 · Mercado turístico",
+  q: "Uma pessoa visita Aveiro, faz um passeio de moliceiro e regressa a casa no mesmo dia. É…",
+  opts: [
+    "Turista, porque visitou outra cidade.",
+    "Excursionista, porque não pernoitou no destino.",
+    "Residente, porque regressou a casa.",
+    "Necessariamente um viajante de negócios."
+  ],
+  a: 1,
+  why: "O excursionista é um visitante que não pernoita no local visitado."
+},
+{
+  round: "1 · Mercado turístico",
+  q: "Um hotel tem 100 quartos. Num dia de grande procura, surgem 150 clientes. O hotel não consegue criar imediatamente mais 50 quartos. Que característica está ilustrada?",
+  opts: [
+    "Intangibilidade.",
+    "Sazonalidade.",
+    "Oferta pouco flexível no curto prazo.",
+    "Turismo cultural."
+  ],
+  a: 2,
+  why: "A capacidade de alojamento é limitada no curto prazo: a oferta turística é pouco flexível."
+},
+{
+  round: "1 · Mercado turístico",
+  q: "Um quarto de hotel que fica vazio esta noite não pode ser guardado para ser vendido amanhã. Esta característica chama-se…",
+  opts: [
+    "Perecibilidade.",
+    "Complementaridade.",
+    "Acessibilidade.",
+    "Procura externa."
+  ],
+  a: 0,
+  why: "Os serviços turísticos não vendidos no momento perdem-se; não podem ser armazenados."
+},
+{
+  round: "2 · PUSH ou PULL?",
+  q: "«Estou cansada da rotina e preciso de descansar.» Esta é uma motivação…",
+  opts: ["PUSH — impulso interno.", "PULL — atração do destino."],
+  a: 0,
+  why: "PUSH corresponde a uma necessidade ou motivação interna que leva a pessoa a querer viajar."
+},
+{
+  round: "2 · PUSH ou PULL?",
+  q: "«Escolhi a Madeira pelas suas paisagens e trilhos.» Esta é uma motivação…",
+  opts: ["PUSH — impulso interno.", "PULL — atração do destino."],
+  a: 1,
+  why: "PULL corresponde às características do destino que atraem o visitante."
+},
+{
+  round: "2 · PUSH ou PULL?",
+  q: "«Quero passar mais tempo com os meus amigos e viver uma aventura.» Predomina…",
+  opts: [
+    "PUSH — socialização e procura de novidade.",
+    "PULL — uma atração específica do destino."
+  ],
+  a: 0,
+  why: "O desejo de conviver e viver algo novo nasce da motivação do indivíduo: PUSH."
+},
+{
+  round: "2 · PUSH ou PULL?",
+  q: "«Vou ao Porto porque quero visitar a Livraria Lello.» Predomina…",
+  opts: [
+    "PUSH — fugir à rotina.",
+    "PULL — um atrativo cultural do destino."
+  ],
+  a: 1,
+  why: "A Livraria Lello é uma atração concreta que influencia a escolha do destino: PULL."
+},
+{
+  round: "3 · Quem é o visitante?",
+  q: "A Joana desloca-se a Lisboa, passa duas noites num hotel e visita museus por lazer. É…",
+  opts: [
+    "Excursionista.",
+    "Turista.",
+    "Apenas viajante, nunca visitante."
+  ],
+  a: 1,
+  why: "É turista porque é visitante e pernoita pelo menos uma noite no destino."
+},
+{
+  round: "3 · Quem é o visitante?",
+  q: "O Miguel vai de Aveiro ao Porto para trabalhar no Porto todos os dias. De acordo com os exemplos da apresentação, é…",
+  opts: [
+    "Turista.",
+    "Excursionista.",
+    "Viajante, mas não visitante por exercer atividade remunerada no local."
+  ],
+  a: 2,
+  why: "A deslocação para exercer atividade remunerada no local visitado não corresponde à definição de visitante apresentada."
+},
+{
+  round: "3 · Quem é o visitante?",
+  q: "Uma visitante passa o dia em Guimarães, visita o castelo e regressa a casa sem pernoitar. É…",
+  opts: ["Excursionista.", "Turista.", "Operadora turística."],
+  a: 0,
+  why: "A visitante não pernoita no destino, por isso é excursionista."
+},
+{
+  round: "4 · Profissional de turismo",
+  q: "Uma família tem duas crianças, orçamento limitado e gosta de natureza. O que deve fazer o profissional?",
+  opts: [
+    "Recomendar o pacote mais caro sem fazer perguntas.",
+    "Perceber necessidades e orçamento e adaptar a proposta.",
+    "Escolher sempre o destino mais popular nas redes sociais.",
+    "Ignorar a idade das crianças."
+  ],
+  a: 1,
+  why: "Compreender o turista implica ouvir, fazer perguntas e adaptar a proposta às preferências reais."
+},
+{
+  round: "4 · Profissional de turismo",
+  q: "Um destino recebe tantos visitantes no verão que há congestionamento, resíduos e pressão sobre a água. Qual é a resposta mais responsável?",
+  opts: [
+    "Atrair ainda mais pessoas no mesmo período, a qualquer custo.",
+    "Ignorar os impactos porque o turismo gera receitas.",
+    "Distribuir melhor os visitantes no tempo e no território e proteger os recursos."
+  ],
+  a: 2,
+  why: "O turismo sustentável procura equilibrar valor económico, ambiente, cultura e necessidades das comunidades."
+},
+{
+  round: "4 · Profissional de turismo",
+  q: "Uma viagem inclui comboio, hotel, restaurante, museu e passeio de moliceiro. Isto ilustra…",
+  opts: [
+    "Complementaridade: diferentes serviços formam a experiência global.",
+    "Que só o hotel faz parte da indústria turística.",
+    "Que a procura turística não influencia a oferta."
+  ],
+  a: 0,
+  why: "O produto turístico é compósito: diferentes serviços complementam-se para criar a experiência global."
+},
+{
+  round: "4 · Profissional de turismo",
+  q: "O mesmo hotel recebe duas avaliações muito diferentes de dois clientes. Qual é a explicação mais adequada?",
+  opts: [
+    "Os serviços turísticos são sempre idênticos para todos.",
+    "A experiência pode variar conforme expectativas, necessidades e perceções.",
+    "Um dos clientes não pode ser turista."
+  ],
+  a: 1,
+  why: "A experiência turística é heterogénea e pode variar entre clientes, mesmo perante o mesmo serviço."
+}
+];
+
+let order = [], idx = 0, score = 0, correct = 0, answered = false;
+
+function startGame() {
+  order = questions.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  idx = 0; score = 0; correct = 0;
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('game').classList.remove('hidden');
+  render();
+}
+
+function render() {
+  answered = false;
+  let q = questions[order[idx]];
+  document.getElementById('roundLabel').textContent = q.round;
+  document.getElementById('score').textContent = score;
+  document.getElementById('bar').style.width = (idx / questions.length * 100) + '%';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('next').classList.add('hidden');
+
+  let html = `<div class="small">Desafio ${idx + 1} de ${questions.length}</div>
+  <div class="question">${q.q}</div><div class="options">`;
+  q.opts.forEach((o, i) => {
+    html += `<button class="option" onclick="answer(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+  });
+  html += '</div>';
+  document.getElementById('play').innerHTML = html;
+}
+
+function answer(n) {
+  if (answered) return;
+  answered = true;
+  let q = questions[order[idx]];
+  let buttons = [...document.querySelectorAll('.option')];
+  let fb = document.getElementById('feedback');
+
+  buttons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.a) b.classList.add('correct');
+    else if (i === n) b.classList.add('wrong');
+  });
+
+  if (n === q.a) {
+    score += 10;
+    correct++;
+    fb.className = 'feedback good';
+    fb.innerHTML = '✅ <b>Correto! +10 pontos.</b> ' + q.why;
+  } else {
+    fb.className = 'feedback bad';
+    fb.innerHTML = '💡 <b>Quase!</b> ' + q.why;
+  }
+
+  document.getElementById('score').textContent = score;
+  document.getElementById('next').classList.remove('hidden');
+  document.getElementById('next').textContent =
+    idx === questions.length - 1 ? 'Ver resultado →' : 'Continuar →';
+}
+
+function nextQuestion() {
+  if (!answered) return;
+  idx++;
+  if (idx >= questions.length) {
+    finish();
+    return;
+  }
+  render();
+}
+
+function finish() {
+  document.getElementById('game').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('finalScore').textContent = score + ' pontos';
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('totalCount').textContent = questions.length;
+
+  let p = Math.round(correct / questions.length * 100);
+  document.getElementById('percent').textContent = p + '%';
+  document.getElementById('resultTitle').textContent =
+    p >= 85 ? '🏆 Excelente trabalho, agente!' :
+    p >= 60 ? '🌟 Boa missão!' : '🧭 Continua a treinar!';
+
+  document.getElementById('resultText').textContent =
+    p >= 85 ? 'Demonstraste um ótimo domínio dos conceitos turísticos.' :
+    p >= 60 ? 'Já dominas várias ideias importantes. Revê as explicações das perguntas em que tiveste dúvidas.' :
+    'Revê os conceitos de oferta e procura, PUSH/PULL e turista/excursionista e tenta novamente.';
+
+  document.getElementById('bar').style.width = '100%';
+}
+
+function quitGame() {
+  document.getElementById('game').classList.add('hidden');
+  document.getElementById('intro').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
