@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Palavras Cruzadas — Turismo</title>
+<style>
+body{font-family:Arial,sans-serif;background:#eef6f5;color:#203447;margin:0;padding:20px}
+main{max-width:1000px;margin:auto}
+header{background:#17324d;color:white;padding:24px;border-radius:16px}
+h1{margin:8px 0}
+header p{line-height:1.5}
+section{background:white;padding:20px;margin:16px 0;border-radius:14px}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+h2{color:#167e7a}
+li{margin:0 0 13px;line-height:1.4}
+.grid{display:grid;grid-template-columns:repeat(15,30px);gap:2px;justify-content:center}
+.cell{width:30px;height:30px;background:white;border:1px solid #718391;position:relative}
+.block{background:#17324d;border-color:#17324d}
+.cell input{width:100%;height:100%;padding:0;border:0;background:transparent;text-align:center;text-transform:uppercase;font-size:17px;font-weight:bold;outline:none}
+.cell input:focus{background:#fff0bd}
+.num{position:absolute;top:1px;left:2px;font-size:9px;pointer-events:none}
+button{border:0;border-radius:8px;padding:11px 15px;margin:5px;background:#168d87;color:white;font-weight:bold;cursor:pointer}
+button.secondary{background:#e4edf0;color:#17324d}
+#answers{display:none;background:#e8f7ed;padding:15px;border-radius:10px}
+#answers.show{display:block}
+.small{font-size:13px;color:#637585}
+@media(max-width:750px){.layout{grid-template-columns:1fr}.grid{grid-template-columns:repeat(15, min(5.5vw,30px));gap:1px}.cell{width:min(5.5vw,30px);height:min(5.5vw,30px)}.cell input{font-size:12px}}
+@media print{body{background:white;padding:0}header{background:white;color:#17324d;border:1px solid #17324d}.no-print{display:none!important}section{break-inside:avoid;box-shadow:none}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div>MARKETING E COMUNICAÇÃO EM TURISMO · 10.º ANO</div>
+<h1>🧩 Palavras Cruzadas: Desafio Turístico</h1>
+<p>Resolve as pistas e completa a grelha com os conceitos estudados. Escreve uma letra em cada casa. Não uses acentos nem espaços.</p>
+</header>
+
+<section>
+<p><b>Nome:</b> __________________________________ &nbsp; <b>Turma:</b> ______ &nbsp; <b>Data:</b> __________</p>
+<p><b>Instruções:</b> lê as definições e descobre os conceitos relacionados com o mercado turístico, as motivações dos turistas e as características dos serviços.</p>
+</section>
+
+<div class="layout">
+<section>
+<h2>Grelha de respostas</h2>
+<p class="small">Preenche as casas correspondentes às pistas. A grelha é organizada por palavra para facilitar a realização e a correção.</p>
+<div id="grid"></div>
+<div class="no-print">
+<button onclick="checkAnswers()">Verificar respostas</button>
+<button class="secondary" onclick="clearAnswers()">Apagar respostas</button>
+<button class="secondary" onclick="window.print()">Imprimir ficha</button>
+<p id="feedback" aria-live="polite"></p>
+</div>
+</section>
+
+<section>
+<h2>Horizontais</h2>
+<ol>
+<li value="1">Conjunto de bens e serviços turísticos disponibilizados no mercado. (6 letras)</li>
+<li value="2">Visitante que pernoita pelo menos uma noite no destino. (7 letras)</li>
+<li value="3">Motivação interna que leva uma pessoa a querer viajar. (4 letras)</li>
+<li value="4">Característica dos serviços que impede armazenar a capacidade não vendida. (13 letras)</li>
+<li value="5">Atividade que envolve deslocações e experiências fora do ambiente habitual. (7 letras)</li>
+<li value="6">Conjunto de pessoas que desejam ou consomem produtos e serviços turísticos. (7 letras)</li>
+</ol>
+<h2>Verticais</h2>
+<ol>
+<li value="7">Visitante que não pernoita no destino. (13 letras)</li>
+<li value="8">Atração do destino que influencia a escolha do visitante. (4 letras)</li>
+<li value="9">Concentração da atividade turística em determinados períodos do ano. (12 letras)</li>
+<li value="10">Característica que explica a variação da experiência entre clientes. (14 letras)</li>
+<li value="11">Princípio que procura equilibrar as dimensões económica, social e ambiental. (15 letras)</li>
+<li value="12">Característica do produto turístico formado por vários serviços articulados. (15 letras)</li>
+</ol>
+</section>
+</div>
+
+<section class="no-print">
+<button onclick="document.getElementById('answers').classList.toggle('show')">Mostrar / ocultar solução do professor</button>
+<div id="answers">
+<h2>Correção</h2>
+<p><b>Horizontais:</b> 1. OFERTA; 2. TURISTA; 3. PUSH; 4. PERECIBILIDADE; 5. TURISMO; 6. PROCURA.</p>
+<p><b>Verticais:</b> 7. EXCURSIONISTA; 8. PULL; 9. SAZONALIDADE; 10. HETEROGENEIDADE; 11. SUSTENTABILIDADE; 12. COMPLEMENTARIDADE.</p>
+<p class="small">Nota: as pistas e as respostas são um exercício de revisão dos conteúdos de turismo.</p>
+</div>
+</section>
+</main>
+<script>
+const words=[
+["1","OFERTA"],["2","TURISTA"],["3","PUSH"],
+["4","PERECIBILIDADE"],["5","TURISMO"],["6","PROCURA"],
+["7","EXCURSIONISTA"],["8","PULL"],["9","SAZONALIDADE"],
+["10","HETEROGENEIDADE"],["11","SUSTENTABILIDADE"],
+["12","COMPLEMENTARIDADE"]
+];
+const grid=document.getElementById("grid");
+words.forEach(([n,w])=>{
+ const title=document.createElement("p");
+ title.innerHTML="<b>"+n+".</b> ";
+ title.style.margin="13px 0 4px";
+ grid.appendChild(title);
+ const row=document.createElement("div");
+ row.className="grid";
+ row.style.gridTemplateColumns="repeat("+w.length+", min(5.5vw,30px))";
+ w.split("").forEach((ch,i)=>{
+  const cell=document.createElement("div");
+  cell.className="cell";
+  const input=document.createElement("input");
+  input.maxLength=1;
+  input.autocomplete="off";
+  input.setAttribute("aria-label","Palavra "+n+", letra "+(i+1));
+  input.dataset.word=n;
+  input.dataset.position=i;
+  cell.appendChild(input);
+  row.appendChild(cell);
+ });
+ grid.appendChild(row);
+});
+function checkAnswers(){
+ let right=0,total=0;
+ words.forEach(([n,w])=>{
+  const inputs=[...document.querySelectorAll('input[data-word="'+n+'"]')];
+  let val=inputs.map(x=>x.value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase()).join("");
+  total+=w.length;
+  for(let i=0;i<inputs.length;i++){
+   if(inputs[i].value.toUpperCase()===w[i]) right++;
+  }
+ });
+ document.getElementById("feedback").textContent=
+ "Letras corretas: "+right+" de "+total+". Revê as respostas e tenta novamente.";
+}
+function clearAnswers(){
+ document.querySelectorAll("#grid input").forEach(x=>x.value="");
+ document.getElementById("feedback").textContent="";
+}
+</script>
+</body>
+</html>
